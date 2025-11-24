@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CalculoRacksTrailerDesktop
+namespace CalculoRacksTrailerDesktop.V1
 {
     public class Group
     {

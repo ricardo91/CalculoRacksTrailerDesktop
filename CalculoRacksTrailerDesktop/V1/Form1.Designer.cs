@@ -1,4 +1,4 @@
-﻿namespace CalculoRacksTrailerDesktop
+﻿namespace CalculoRacksTrailerDesktop.V1
 {
     partial class Form1
     {

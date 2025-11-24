@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace CalculoRacksTrailerDesktop
+namespace CalculoRacksTrailerDesktop.V1
 {
     public partial class Form1 : Form
     {
