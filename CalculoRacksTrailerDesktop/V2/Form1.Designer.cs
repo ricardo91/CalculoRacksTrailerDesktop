@@ -36,6 +36,7 @@ namespace CalculoRacksTrailerDesktop.V2
         private System.Windows.Forms.Button btnNuevo;
         private System.Windows.Forms.Button btnLimpiarRack;
         private System.Windows.Forms.Button btnBuscarCatalogo;
+        private System.Windows.Forms.Button btnLimpiarResultado;
 
         // Nuevos controles para estrategia
         private System.Windows.Forms.Label lblStrategy;
@@ -81,6 +82,7 @@ namespace CalculoRacksTrailerDesktop.V2
             btnMostrarResumen = new Button();
             btnMostrarDiagrama = new Button();
             btnLimpiarRack = new Button();
+            btnLimpiarResultado = new Button();
             btnNuevo = new Button();
             rtbResultado = new RichTextBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -122,6 +124,7 @@ namespace CalculoRacksTrailerDesktop.V2
             splitContainer1.Panel1.Controls.Add(btnMostrarResumen);
             splitContainer1.Panel1.Controls.Add(btnMostrarDiagrama);
             splitContainer1.Panel1.Controls.Add(btnLimpiarRack);
+            splitContainer1.Panel1.Controls.Add(btnLimpiarResultado);
             splitContainer1.Panel1.Controls.Add(btnNuevo);
             splitContainer1.Panel1.AutoScroll = true;
             // 
@@ -319,7 +322,7 @@ namespace CalculoRacksTrailerDesktop.V2
             // 
             // btnMostrarDiagrama
             // 
-            btnMostrarDiagrama.Location = new Point(20, 562);
+            btnMostrarDiagrama.Location = new Point(180, 527);
             btnMostrarDiagrama.Name = "btnMostrarDiagrama";
             btnMostrarDiagrama.Size = new Size(150, 30);
             btnMostrarDiagrama.TabIndex = 22;
@@ -334,6 +337,15 @@ namespace CalculoRacksTrailerDesktop.V2
             btnLimpiarRack.TabIndex = 23;
             btnLimpiarRack.Text = "Limpiar Datos Rack";
             btnLimpiarRack.Click += btnLimpiarRack_Click;
+            // 
+            // btnLimpiarResultado
+            // 
+            btnLimpiarResultado.Location = new Point(20, 562);
+            btnLimpiarResultado.Name = "btnLimpiarResultado";
+            btnLimpiarResultado.Size = new Size(310, 30);
+            btnLimpiarResultado.TabIndex = 26;
+            btnLimpiarResultado.Text = "🗑️ Limpiar Panel de Resultado";
+            btnLimpiarResultado.Click += btnLimpiarResultado_Click;
             // 
             // btnNuevo
             // 

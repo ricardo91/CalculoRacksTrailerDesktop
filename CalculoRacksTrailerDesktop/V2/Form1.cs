@@ -602,6 +602,25 @@ namespace CalculoRacksTrailerDesktop.V2
             rtbResultado.AppendText("\n" + new string('═', 70) + "\n");
         }
 
+        private void btnLimpiarResultado_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show(
+                "¿Deseas limpiar el panel de resultado?\n\n" +
+                "Esto solo limpiará el texto mostrado, no eliminará los racks agregados al tráiler.",
+                "Limpiar Panel",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                rtbResultado.Clear();
+                rtbResultado.AppendText($"Panel limpiado.\n");
+                rtbResultado.AppendText($"Tráiler: {trailerLargo}×{trailerAncho}×{trailerAlto}mm | ");
+                rtbResultado.AppendText($"Catálogo: {rackCatalog.Count} racks | ");
+                rtbResultado.AppendText($"Racks agregados: {groups.Sum(g => g.Value.UnitHeights.Count)}\n\n");
+            }
+        }
+
         private void btnNuevo_Click(object sender, EventArgs e)
         {
             txtCodigoRack.Clear();
