@@ -1,0 +1,23 @@
+✅ Validación del Algoritmo
+Lo que hace el código actual:
+
+1. Apilamiento vertical (líneas 52-68):
+
+Agrupa racks con la misma base (largo × ancho).
+Los apila de mayor a menor altura hasta alcanzar trailerAlto.
+Si se pasa, crea una nueva torre en el suelo.
+✅ CORRECTO: Cumple con el requisito de apilar racks con misma base
+
+2. Colocación horizontal en filas (líneas 76-103):
+
+Coloca torres de izquierda a derecha (acumulando anchos).
+Cada fila usa todo el ancho disponible del tráiler (trailerAncho).
+Cuando una torre no cabe en el ancho, crea una nueva fila (avanza en el largo).
+El largo ocupado = suma de los largos máximos de cada fila.
+✅ CORRECTO: Permite múltiples filas/columnas según medidas.
+
+3. Validaciones:
+
+✅ Verifica que el largo total no supere trailerLargo.
+✅ Verifica que cada torre cabe individualmente antes de agregarse.
+✅ Optimiza ordenando torres grandes primero.
