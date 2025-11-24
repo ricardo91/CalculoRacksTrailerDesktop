@@ -160,12 +160,12 @@ namespace CalculoRacksTrailerDesktop.V2
 
         private void DibujarDiagrama()
         {
-            rtbResultado.AppendText("\n--- DIAGRAMA ---\n");
+            rtbResultado.AppendText("\n╔════════════════════════════════════════════════════════════╗\n");
+            rtbResultado.AppendText("║            DIAGRAMA - VISTA SUPERIOR DEL TRÁILER           ║\n");
+            rtbResultado.AppendText("╚════════════════════════════════════════════════════════════╝\n\n");
 
-            int consoleWidth = 60;
-            int maxHeightLines = 12;
-
-            var towers = new List<(string code, double length, double width, double height)>();
+            // 1. Crear torres
+            var towers = new List<(string code, double largo, double ancho, double alto)>();
 
             foreach (var g in groups.Values)
             {
@@ -189,10 +189,18 @@ namespace CalculoRacksTrailerDesktop.V2
                     towers.Add((string.Join(",", g.Codes), g.Largo, g.Ancho, current));
             }
 
-            towers = towers.OrderByDescending(t => t.width).ThenByDescending(t => t.length).ToList();
+            if (towers.Count == 0)
+            {
+                rtbResultado.AppendText("No hay racks para mostrar.\n");
+                return;
+            }
 
-            var rows = new List<List<(string code, double length, double width, double height)>>();
-            var rowWidths = new List<double>();
+            // 2. Ordenar según estrategia actual
+            towers = towers.OrderByDescending(t => t.ancho).ThenByDescending(t => t.largo).ToList();
+
+            // 3. Organizar en filas (de izquierda a derecha usando el ANCHO del tráiler)
+            var rows = new List<List<(string code, double largo, double ancho, double alto)>>();
+            var rowMaxLargos = new List<double>();
 
             foreach (var t in towers)
             {
@@ -200,10 +208,12 @@ namespace CalculoRacksTrailerDesktop.V2
 
                 for (int i = 0; i < rows.Count; i++)
                 {
-                    if (rowWidths[i] + t.width <= trailerAncho)
+                    double currentRowAncho = rows[i].Sum(tower => tower.ancho);
+
+                    if (currentRowAncho + t.ancho <= trailerAncho)
                     {
                         rows[i].Add(t);
-                        rowWidths[i] += t.width;
+                        rowMaxLargos[i] = Math.Max(rowMaxLargos[i], t.largo);
                         placed = true;
                         break;
                     }
@@ -211,50 +221,113 @@ namespace CalculoRacksTrailerDesktop.V2
 
                 if (!placed)
                 {
-                    rows.Add(new List<(string code, double length, double width, double height)>() { t });
-                    rowWidths.Add(t.width);
+                    rows.Add(new List<(string code, double largo, double ancho, double alto)>() { t });
+                    rowMaxLargos.Add(t.largo);
                 }
             }
+
+            // 4. Calcular espacio usado
+            double totalLargoUsado = rowMaxLargos.Sum();
+
+            // 5. Dibujar información del tráiler
+            rtbResultado.AppendText($"Dimensiones del tráiler:\n");
+            rtbResultado.AppendText($"  • Largo (profundidad): {trailerLargo:F0}mm\n");
+            rtbResultado.AppendText($"  • Ancho (lado a lado): {trailerAncho:F0}mm\n");
+            rtbResultado.AppendText($"  • Alto: {trailerAlto:F0}mm\n\n");
+            rtbResultado.AppendText($"Uso del espacio:\n");
+            rtbResultado.AppendText($"  • Largo usado: {totalLargoUsado:F0}mm de {trailerLargo:F0}mm ({(totalLargoUsado / trailerLargo * 100):F1}%)\n");
+            rtbResultado.AppendText($"  • Torres colocadas: {towers.Count}\n");
+            rtbResultado.AppendText($"  • Filas creadas: {rows.Count}\n\n");
+
+            // 6. Dibujar vista superior (mirando desde arriba)
+            int diagramWidth = 68;
+
+            rtbResultado.AppendText("           ┌" + new string('─', diagramWidth) + "┐\n");
+            rtbResultado.AppendText("           │" + " FRENTE DEL TRÁILER ".PadLeft((diagramWidth + 20) / 2).PadRight(diagramWidth) + "│\n");
+            rtbResultado.AppendText("        ↑  ├" + new string('─', diagramWidth) + "┤\n");
+
+            int rowNumber = 1;
 
             foreach (var row in rows)
             {
-                rtbResultado.AppendText("\nFila:\n");
+                int rowIndex = rowNumber - 1;
+                double rowLargo = rowMaxLargos[rowIndex];
+                double rowAnchoTotal = row.Sum(t => t.ancho);
 
-                for (int level = maxHeightLines - 1; level >= 0; level--)
+                rtbResultado.AppendText($"        │  │ Profundidad: {rowLargo:F0}mm | Ancho usado: {rowAnchoTotal:F0}/{trailerAncho:F0}mm (FILA {rowNumber})\n");
+                rtbResultado.AppendText($" LARGO  │  ├" + new string('─', diagramWidth) + "┤\n");
+
+                // Dibujar las torres de esta fila
+                int numLines = 3;
+
+                for (int line = 0; line < numLines; line++)
                 {
+                    rtbResultado.AppendText("        │  │");
+
                     foreach (var tower in row)
                     {
-                        int towerChars = (int)Math.Round((tower.length / trailerLargo) * consoleWidth);
-                        if (towerChars < 2) towerChars = 2;
+                        // El ancho de cada torre en caracteres (proporcional al ancho real)
+                        int towerWidth = Math.Max(8, (int)Math.Round((tower.ancho / trailerAncho) * diagramWidth));
 
-                        int towerHeightLines =
-                            (int)Math.Round((tower.height / trailerAlto) * maxHeightLines);
-                        if (towerHeightLines < 1) towerHeightLines = 1;
+                        string content;
+                        if (line == 0 || line == numLines - 1)
+                        {
+                            content = "+" + new string('─', towerWidth - 2) + "+";
+                        }
+                        else
+                        {
+                            // Mostrar: Ancho x Largo (Altura)
+                            string info = $"{tower.ancho:F0}x{tower.largo:F0}({tower.alto:F0})";
+                            if (info.Length > towerWidth - 2)
+                            {
+                                info = tower.code.Split(',')[0];
+                                if (info.Length > towerWidth - 2)
+                                    info = info.Substring(0, towerWidth - 2);
+                            }
+                            content = "│" + info.PadLeft((towerWidth + info.Length - 2) / 2).PadRight(towerWidth - 2) + "│";
+                        }
 
-                        string block =
-                            (level < towerHeightLines)
-                                ? new string('█', towerChars)
-                                : new string(' ', towerChars);
-
-                        rtbResultado.AppendText(block);
+                        rtbResultado.AppendText(content);
                     }
 
-                    rtbResultado.AppendText("\n");
+                    // Espacio vacío en el ancho
+                    int usedWidth = row.Sum(t => Math.Max(8, (int)Math.Round((t.ancho / trailerAncho) * diagramWidth)));
+                    int remainingWidth = diagramWidth - usedWidth;
+                    if (remainingWidth > 0)
+                        rtbResultado.AppendText(new string('·', remainingWidth));
+
+                    rtbResultado.AppendText("│\n");
                 }
 
-                foreach (var tower in row)
-                {
-                    int towerChars = (int)Math.Round((tower.length / trailerLargo) * consoleWidth);
-                    string label = $"{tower.code}({tower.height:0}mm)";
-                    if (label.Length > towerChars) label = label.Substring(0, towerChars);
-                    label = label.PadRight(towerChars);
-                    rtbResultado.AppendText(label);
-                }
-
-                rtbResultado.AppendText("\n");
+                rowNumber++;
             }
 
-            rtbResultado.AppendText("----------------\n");
+            // Mostrar espacio vacío
+            double espacioVacio = trailerLargo - totalLargoUsado;
+            if (espacioVacio > 10)
+            {
+                rtbResultado.AppendText("        │  ├" + new string('─', diagramWidth) + "┤\n");
+                rtbResultado.AppendText($" {trailerLargo:F0}mm │  │ [ ESPACIO VACÍO: {espacioVacio:F0}mm de profundidad restante ]");
+                rtbResultado.AppendText(new string(' ', Math.Max(0, diagramWidth - 52)) + "│\n");
+            }
+
+            rtbResultado.AppendText("        ↓  ├" + new string('─', diagramWidth) + "┤\n");
+            rtbResultado.AppendText("           │" + " PARTE TRASERA ".PadLeft((diagramWidth + 15) / 2).PadRight(diagramWidth) + "│\n");
+            rtbResultado.AppendText("           └" + new string('─', diagramWidth) + "┘\n");
+            rtbResultado.AppendText("            ←" + new string('─', diagramWidth - 2) + "→\n");
+            rtbResultado.AppendText($"             ANCHO DEL TRÁILER ({trailerAncho:F0}mm)\n\n");
+
+            // 7. Leyenda detallada
+            rtbResultado.AppendText("═══════════════════════════════════════════════════════════\n");
+            rtbResultado.AppendText("LEYENDA:\n");
+            rtbResultado.AppendText("  • Vista desde arriba del tráiler\n");
+            rtbResultado.AppendText("  • Cada caja representa una torre de racks apilados\n");
+            rtbResultado.AppendText("  • Formato dentro: ANCHO×LARGO(ALTURA) - todas en mm\n");
+            rtbResultado.AppendText("  • Las torres se colocan DE IZQUIERDA A DERECHA\n");
+            rtbResultado.AppendText("  • Profundidad de fila = LARGO máximo de sus torres\n");
+            rtbResultado.AppendText("  • Nueva fila cuando el ancho acumulado excede " + trailerAncho + "mm\n");
+            rtbResultado.AppendText("  • Los puntos (···) indican ancho sin utilizar\n");
+            rtbResultado.AppendText("═══════════════════════════════════════════════════════════\n");
         }
 
         private void btnLimpiarRack_Click(object sender, EventArgs e)

@@ -95,6 +95,7 @@ namespace CalculoRacksTrailerDesktop.V2
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.AutoScroll = true;
             splitContainer1.Panel1.Controls.Add(lblTrailerLargo);
             splitContainer1.Panel1.Controls.Add(txtTrailerLargo);
             splitContainer1.Panel1.Controls.Add(lblTrailerAncho);
@@ -120,13 +121,12 @@ namespace CalculoRacksTrailerDesktop.V2
             splitContainer1.Panel1.Controls.Add(btnMostrarDiagrama);
             splitContainer1.Panel1.Controls.Add(btnLimpiarRack);
             splitContainer1.Panel1.Controls.Add(btnNuevo);
-            splitContainer1.Panel1.AutoScroll = true;
             // 
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(rtbResultado);
             splitContainer1.Size = new Size(1200, 700);
-            splitContainer1.SplitterDistance = 380;
+            splitContainer1.SplitterDistance = 349;
             splitContainer1.TabIndex = 0;
             // 
             // lblTrailerLargo
@@ -185,12 +185,12 @@ namespace CalculoRacksTrailerDesktop.V2
             // 
             // lblStrategy
             // 
+            lblStrategy.Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold);
             lblStrategy.Location = new Point(20, 173);
             lblStrategy.Name = "lblStrategy";
             lblStrategy.Size = new Size(150, 23);
             lblStrategy.TabIndex = 7;
             lblStrategy.Text = "Estrategia de Colocación";
-            lblStrategy.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             // 
             // cmbStrategy
             // 
@@ -203,13 +203,13 @@ namespace CalculoRacksTrailerDesktop.V2
             // 
             // lblStrategyInfo
             // 
+            lblStrategyInfo.Font = new System.Drawing.Font("Segoe UI", 8F, FontStyle.Italic);
+            lblStrategyInfo.ForeColor = Color.DarkBlue;
             lblStrategyInfo.Location = new Point(20, 230);
             lblStrategyInfo.Name = "lblStrategyInfo";
             lblStrategyInfo.Size = new Size(310, 50);
             lblStrategyInfo.TabIndex = 9;
             lblStrategyInfo.Text = "Coloca primero las torres más anchas.\nÓptimo para aprovechar el ancho del tráiler.";
-            lblStrategyInfo.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Italic);
-            lblStrategyInfo.ForeColor = System.Drawing.Color.DarkBlue;
             // 
             // lblCodigoRack
             // 
@@ -338,7 +338,7 @@ namespace CalculoRacksTrailerDesktop.V2
             rtbResultado.Location = new Point(0, 0);
             rtbResultado.Name = "rtbResultado";
             rtbResultado.ReadOnly = true;
-            rtbResultado.Size = new Size(816, 700);
+            rtbResultado.Size = new Size(847, 700);
             rtbResultado.TabIndex = 0;
             rtbResultado.Text = "";
             // 
