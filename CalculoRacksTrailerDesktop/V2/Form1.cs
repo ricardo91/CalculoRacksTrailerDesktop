@@ -11,10 +11,120 @@ namespace CalculoRacksTrailerDesktop.V2
         private Dictionary<string, Group> groups = new Dictionary<string, Group>();
         private PlacementStrategy currentStrategy = PlacementStrategy.GreedyByWidth;
 
+        // Catálogo de racks cargados desde CSV
+        private Dictionary<string, RackData> rackCatalog = new Dictionary<string, RackData>();
+
         public Form1()
         {
             InitializeComponent();
             InitializeStrategyComboBox();
+            CargarDatosIniciales();
+        }
+
+        private void CargarDatosIniciales()
+        {
+            // Cargar dimensiones fijas del tráiler
+            trailerLargo = 13600;
+            trailerAncho = 2500;
+            trailerAlto = 2900;
+
+            txtTrailerLargo.Text = trailerLargo.ToString();
+            txtTrailerAncho.Text = trailerAncho.ToString();
+            txtTrailerAlto.Text = trailerAlto.ToString();
+
+            // Deshabilitar edición de dimensiones del tráiler (son fijas)
+            txtTrailerLargo.ReadOnly = true;
+            txtTrailerAncho.ReadOnly = true;
+            txtTrailerAlto.ReadOnly = true;
+
+            rtbResultado.AppendText($"Tráiler configurado automáticamente: {trailerLargo}×{trailerAncho}×{trailerAlto}mm\n\n");
+
+            // Cargar catálogo de racks desde CSV
+            CargarCatalogoRacks();
+        }
+
+        private void CargarCatalogoRacks()
+        {
+            string csvPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "racks_catalog.csv");
+
+            if (!System.IO.File.Exists(csvPath))
+            {
+                rtbResultado.AppendText("⚠ Archivo 'racks_catalog.csv' no encontrado.\n");
+                rtbResultado.AppendText("Se creará un archivo de ejemplo en la carpeta del programa.\n\n");
+                CrearArchivoEjemplo(csvPath);
+                return;
+            }
+
+            try
+            {
+                var lines = System.IO.File.ReadAllLines(csvPath);
+                int loaded = 0;
+                int errors = 0;
+
+                // Saltar la primera línea si es encabezado
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    string line = lines[i].Trim();
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    var parts = line.Split(',', ';');
+                    if (parts.Length >= 4)
+                    {
+                        string codigo = parts[0].Trim();
+
+                        if (double.TryParse(parts[1].Trim(), out double largo) &&
+                            double.TryParse(parts[2].Trim(), out double ancho) &&
+                            double.TryParse(parts[3].Trim(), out double alto))
+                        {
+                            string descripcion = parts.Length > 4 ? parts[4].Trim() : "";
+
+                            rackCatalog[codigo.ToUpper()] = new RackData
+                            {
+                                Codigo = codigo,
+                                Largo = largo,
+                                Ancho = ancho,
+                                Alto = alto,
+                                Descripcion = descripcion
+                            };
+                            loaded++;
+                        }
+                        else
+                        {
+                            errors++;
+                        }
+                    }
+                }
+
+                rtbResultado.AppendText($"✓ Catálogo cargado: {loaded} racks disponibles");
+                if (errors > 0)
+                    rtbResultado.AppendText($" ({errors} líneas con errores ignoradas)");
+                rtbResultado.AppendText("\n\n");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar el catálogo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void CrearArchivoEjemplo(string path)
+        {
+            try
+            {
+                var ejemplo = new System.Text.StringBuilder();
+                ejemplo.AppendLine("Codigo,Largo,Ancho,Alto,Descripcion");
+                ejemplo.AppendLine("00518,1670,1200,900,Rack estándar A");
+                ejemplo.AppendLine("04968,3700,2400,1200,Rack grande B");
+                ejemplo.AppendLine("04971,1650,1200,920,Rack estándar C");
+
+                System.IO.File.WriteAllText(path, ejemplo.ToString());
+
+                rtbResultado.AppendText($"✓ Archivo de ejemplo creado: {path}\n");
+                rtbResultado.AppendText("Edita el archivo y reinicia la aplicación para cargar tus racks.\n\n");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al crear archivo de ejemplo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void InitializeStrategyComboBox()
@@ -58,35 +168,64 @@ namespace CalculoRacksTrailerDesktop.V2
 
         private void btnSetTrailer_Click(object sender, EventArgs e)
         {
-            if (!double.TryParse(txtTrailerLargo.Text, out trailerLargo) ||
-                !double.TryParse(txtTrailerAncho.Text, out trailerAncho) ||
-                !double.TryParse(txtTrailerAlto.Text, out trailerAlto))
-            {
-                MessageBox.Show("Valores inválidos.");
-                return;
-            }
-
-            rtbResultado.AppendText(
-                $"Tráiler configurado: {trailerLargo}×{trailerAncho}×{trailerAlto}\n");
+            // Las dimensiones del tráiler son fijas, solo mostramos confirmación
+            MessageBox.Show(
+                $"Dimensiones del tráiler (fijas):\n\n" +
+                $"Largo: {trailerLargo}mm\n" +
+                $"Ancho: {trailerAncho}mm\n" +
+                $"Alto: {trailerAlto}mm",
+                "Configuración del Tráiler",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
         private void btnAgregarRack_Click(object sender, EventArgs e)
         {
-            string codigo = txtCodigoRack.Text.Trim();
+            string codigo = txtCodigoRack.Text.Trim().ToUpper();
 
-            if (!double.TryParse(txtRackLargo.Text, out double largo) ||
-                !double.TryParse(txtRackAncho.Text, out double ancho) ||
-                !double.TryParse(txtRackAlto.Text, out double alto) ||
-                !int.TryParse(txtRackUnidades.Text, out int unidades))
+            if (string.IsNullOrEmpty(codigo))
             {
-                MessageBox.Show("Valores inválidos.");
+                MessageBox.Show("Por favor, introduce un código de rack.", "Código requerido",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+
+            // Buscar en el catálogo
+            if (!rackCatalog.ContainsKey(codigo))
+            {
+                MessageBox.Show(
+                    $"El código '{codigo}' no se encuentra en el catálogo.\n\n" +
+                    $"Racks disponibles: {rackCatalog.Count}\n" +
+                    $"Revisa el archivo 'racks_catalog.csv'",
+                    "Código no encontrado",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            var rackData = rackCatalog[codigo];
+
+            // Obtener las unidades (manual o desde el campo)
+            if (!int.TryParse(txtRackUnidades.Text, out int unidades) || unidades <= 0)
+            {
+                MessageBox.Show("Introduce un número válido de unidades.", "Unidades inválidas",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Autocompletar los campos con los datos del catálogo
+            txtRackLargo.Text = rackData.Largo.ToString();
+            txtRackAncho.Text = rackData.Ancho.ToString();
+            txtRackAlto.Text = rackData.Alto.ToString();
+
+            double largo = rackData.Largo;
+            double ancho = rackData.Ancho;
+            double alto = rackData.Alto;
 
             if (!TrailerCalculator.UnitFitsSingle(largo, ancho, alto,
                 trailerLargo, trailerAncho, trailerAlto))
             {
-                rtbResultado.AppendText($"ERROR → El rack {codigo} no cabe.\n");
+                rtbResultado.AppendText($"ERROR → El rack {codigo} ({largo}×{ancho}×{alto}) no cabe en el tráiler.\n");
                 return;
             }
 
@@ -109,13 +248,22 @@ namespace CalculoRacksTrailerDesktop.V2
 
             if (!ok)
             {
-                rtbResultado.AppendText($"NO CABE → {reason}\n");
+                rtbResultado.AppendText($"NO CABE → {codigo}: {reason}\n");
                 return;
             }
 
             groups = temp;
 
-            rtbResultado.AppendText($"OK → Se añadieron {unidades} unidades de '{codigo}: {largo}x{ancho}x{alto}'. {reason}\n");
+            string desc = !string.IsNullOrEmpty(rackData.Descripcion) ? $" ({rackData.Descripcion})" : "";
+            rtbResultado.AppendText($"✓ {unidades}x {codigo}{desc} - {largo}×{ancho}×{alto}mm\n");
+
+            if (!string.IsNullOrEmpty(reason))
+                rtbResultado.AppendText($"  {reason}\n");
+
+            // Limpiar para el próximo
+            txtCodigoRack.Clear();
+            txtRackUnidades.Clear();
+            txtCodigoRack.Focus();
         }
 
         private void btnMostrarResumen_Click(object sender, EventArgs e)
@@ -339,12 +487,44 @@ namespace CalculoRacksTrailerDesktop.V2
             txtRackUnidades.Clear();
         }
 
+        private void btnBuscarCatalogo_Click(object sender, EventArgs e)
+        {
+            if (rackCatalog.Count == 0)
+            {
+                MessageBox.Show(
+                    "No hay racks en el catálogo.\n\n" +
+                    "Asegúrate de que el archivo 'racks_catalog.csv' existe " +
+                    "en la carpeta del programa y contiene datos válidos.",
+                    "Catálogo vacío",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            rtbResultado.AppendText("\n╔════════════════════════════════════════════════════════════╗\n");
+            rtbResultado.AppendText("║                   CATÁLOGO DE RACKS                        ║\n");
+            rtbResultado.AppendText("╚════════════════════════════════════════════════════════════╝\n\n");
+
+            rtbResultado.AppendText($"Total de racks disponibles: {rackCatalog.Count}\n\n");
+            rtbResultado.AppendText(string.Format("{0,-10} {1,-10} {2,-10} {3,-10} {4}\n",
+                "Código", "Largo", "Ancho", "Alto", "Descripción"));
+            rtbResultado.AppendText(new string('─', 70) + "\n");
+
+            foreach (var rack in rackCatalog.Values.OrderBy(r => r.Codigo))
+            {
+                rtbResultado.AppendText(string.Format("{0,-10} {1,-10:F0} {2,-10:F0} {3,-10:F0} {4}\n",
+                    rack.Codigo,
+                    rack.Largo,
+                    rack.Ancho,
+                    rack.Alto,
+                    rack.Descripcion));
+            }
+
+            rtbResultado.AppendText("\n" + new string('═', 70) + "\n");
+        }
+
         private void btnNuevo_Click(object sender, EventArgs e)
         {
-            txtTrailerLargo.Clear();
-            txtTrailerAncho.Clear();
-            txtTrailerAlto.Clear();
-
             txtCodigoRack.Clear();
             txtRackLargo.Clear();
             txtRackAncho.Clear();
@@ -352,13 +532,21 @@ namespace CalculoRacksTrailerDesktop.V2
             txtRackUnidades.Clear();
 
             groups = new Dictionary<string, Group>();
-            trailerLargo = 0;
-            trailerAncho = 0;
-            trailerAlto = 0;
 
             rtbResultado.Clear();
-
+            rtbResultado.AppendText($"Tráiler configurado: {trailerLargo}×{trailerAncho}×{trailerAlto}mm\n");
+            rtbResultado.AppendText($"Catálogo: {rackCatalog.Count} racks disponibles\n\n");
             rtbResultado.AppendText("Nuevo proyecto iniciado.\n");
         }
+    }
+
+    // Clase para almacenar datos de los racks del catálogo
+    public class RackData
+    {
+        public string Codigo { get; set; }
+        public double Largo { get; set; }
+        public double Ancho { get; set; }
+        public double Alto { get; set; }
+        public string Descripcion { get; set; }
     }
 }
