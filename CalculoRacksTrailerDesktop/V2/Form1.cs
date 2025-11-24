@@ -37,6 +37,11 @@ namespace CalculoRacksTrailerDesktop.V2
             txtTrailerAncho.ReadOnly = true;
             txtTrailerAlto.ReadOnly = true;
 
+            // También deshabilitar edición manual de las dimensiones del rack
+            txtRackLargo.ReadOnly = true;
+            txtRackAncho.ReadOnly = true;
+            txtRackAlto.ReadOnly = true;
+
             rtbResultado.AppendText($"Tráiler configurado automáticamente: {trailerLargo}×{trailerAncho}×{trailerAlto}mm\n\n");
 
             // Cargar catálogo de racks desde CSV
@@ -45,7 +50,9 @@ namespace CalculoRacksTrailerDesktop.V2
 
         private void CargarCatalogoRacks()
         {
-            string csvPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "racks_catalog.csv");
+            string csvPath = System.IO.Path.Combine(
+                System.IO.Path.GetDirectoryName(Application.ExecutablePath),
+                "racks_catalog.csv");
 
             if (!System.IO.File.Exists(csvPath))
             {
@@ -102,7 +109,8 @@ namespace CalculoRacksTrailerDesktop.V2
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar el catálogo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al cargar el catálogo: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -115,6 +123,8 @@ namespace CalculoRacksTrailerDesktop.V2
                 ejemplo.AppendLine("00518,1670,1200,900,Rack estándar A");
                 ejemplo.AppendLine("04968,3700,2400,1200,Rack grande B");
                 ejemplo.AppendLine("04971,1650,1200,920,Rack estándar C");
+                ejemplo.AppendLine("04993,1650,1200,920,Rack estándar D");
+                ejemplo.AppendLine("10077,1650,1200,920,Rack estándar E");
 
                 System.IO.File.WriteAllText(path, ejemplo.ToString());
 
@@ -123,7 +133,8 @@ namespace CalculoRacksTrailerDesktop.V2
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al crear archivo de ejemplo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al crear archivo de ejemplo: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -135,6 +146,67 @@ namespace CalculoRacksTrailerDesktop.V2
             cmbStrategy.Items.Add("Greedy - Por Área (Rápido)");
             cmbStrategy.Items.Add("Best Fit - Mejor Ajuste (Más lento)");
             cmbStrategy.SelectedIndex = 0;
+        }
+
+        private void txtCodigoRack_TextChanged(object sender, EventArgs e)
+        {
+            string codigo = txtCodigoRack.Text.Trim().ToUpper();
+
+            if (string.IsNullOrEmpty(codigo))
+            {
+                // Limpiar campos si el código está vacío
+                txtRackLargo.Clear();
+                txtRackAncho.Clear();
+                txtRackAlto.Clear();
+                txtRackLargo.BackColor = System.Drawing.SystemColors.Window;
+                txtRackAncho.BackColor = System.Drawing.SystemColors.Window;
+                txtRackAlto.BackColor = System.Drawing.SystemColors.Window;
+                return;
+            }
+
+            // Buscar en el catálogo
+            if (rackCatalog.ContainsKey(codigo))
+            {
+                var rackData = rackCatalog[codigo];
+
+                // Autocompletar los campos
+                txtRackLargo.Text = rackData.Largo.ToString();
+                txtRackAncho.Text = rackData.Ancho.ToString();
+                txtRackAlto.Text = rackData.Alto.ToString();
+
+                // Fondo verde claro para indicar que se encontró
+                txtRackLargo.BackColor = System.Drawing.Color.LightGreen;
+                txtRackAncho.BackColor = System.Drawing.Color.LightGreen;
+                txtRackAlto.BackColor = System.Drawing.Color.LightGreen;
+
+                // Enfocar el campo de unidades para que el usuario pueda continuar
+                if (!string.IsNullOrEmpty(txtCodigoRack.Text) && txtRackUnidades.Text.Length == 0)
+                {
+                    // Solo mover el foco si el campo de unidades está vacío
+                    // (evita interrumpir si el usuario ya está escribiendo ahí)
+                }
+            }
+            else
+            {
+                // Limpiar campos si no se encuentra
+                txtRackLargo.Clear();
+                txtRackAncho.Clear();
+                txtRackAlto.Clear();
+
+                // Fondo amarillo claro para indicar que no se encontró
+                if (codigo.Length > 2) // Solo mostrar si ya escribió algo significativo
+                {
+                    txtRackLargo.BackColor = System.Drawing.Color.LightYellow;
+                    txtRackAncho.BackColor = System.Drawing.Color.LightYellow;
+                    txtRackAlto.BackColor = System.Drawing.Color.LightYellow;
+                }
+                else
+                {
+                    txtRackLargo.BackColor = System.Drawing.SystemColors.Window;
+                    txtRackAncho.BackColor = System.Drawing.SystemColors.Window;
+                    txtRackAlto.BackColor = System.Drawing.SystemColors.Window;
+                }
+            }
         }
 
         private void cmbStrategy_SelectedIndexChanged(object sender, EventArgs e)
@@ -187,6 +259,7 @@ namespace CalculoRacksTrailerDesktop.V2
             {
                 MessageBox.Show("Por favor, introduce un código de rack.", "Código requerido",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtCodigoRack.Focus();
                 return;
             }
 
@@ -196,27 +269,26 @@ namespace CalculoRacksTrailerDesktop.V2
                 MessageBox.Show(
                     $"El código '{codigo}' no se encuentra en el catálogo.\n\n" +
                     $"Racks disponibles: {rackCatalog.Count}\n" +
-                    $"Revisa el archivo 'racks_catalog.csv'",
+                    $"Usa el botón '🔍 Ver Catálogo' para ver la lista completa.",
                     "Código no encontrado",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
+                txtCodigoRack.Focus();
+                txtCodigoRack.SelectAll();
                 return;
             }
 
             var rackData = rackCatalog[codigo];
 
-            // Obtener las unidades (manual o desde el campo)
+            // Obtener las unidades
             if (!int.TryParse(txtRackUnidades.Text, out int unidades) || unidades <= 0)
             {
-                MessageBox.Show("Introduce un número válido de unidades.", "Unidades inválidas",
+                MessageBox.Show("Introduce un número válido de unidades (mayor a 0).", "Unidades inválidas",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtRackUnidades.Focus();
+                txtRackUnidades.SelectAll();
                 return;
             }
-
-            // Autocompletar los campos con los datos del catálogo
-            txtRackLargo.Text = rackData.Largo.ToString();
-            txtRackAncho.Text = rackData.Ancho.ToString();
-            txtRackAlto.Text = rackData.Alto.ToString();
 
             double largo = rackData.Largo;
             double ancho = rackData.Ancho;
@@ -225,7 +297,7 @@ namespace CalculoRacksTrailerDesktop.V2
             if (!TrailerCalculator.UnitFitsSingle(largo, ancho, alto,
                 trailerLargo, trailerAncho, trailerAlto))
             {
-                rtbResultado.AppendText($"ERROR → El rack {codigo} ({largo}×{ancho}×{alto}) no cabe en el tráiler.\n");
+                rtbResultado.AppendText($"❌ ERROR → El rack {codigo} ({largo}×{ancho}×{alto}) no cabe en el tráiler.\n");
                 return;
             }
 
@@ -248,7 +320,7 @@ namespace CalculoRacksTrailerDesktop.V2
 
             if (!ok)
             {
-                rtbResultado.AppendText($"NO CABE → {codigo}: {reason}\n");
+                rtbResultado.AppendText($"❌ NO CABE → {codigo}: {reason}\n");
                 return;
             }
 
@@ -485,6 +557,13 @@ namespace CalculoRacksTrailerDesktop.V2
             txtRackAncho.Clear();
             txtRackAlto.Clear();
             txtRackUnidades.Clear();
+
+            // Restaurar colores normales
+            txtRackLargo.BackColor = System.Drawing.SystemColors.Window;
+            txtRackAncho.BackColor = System.Drawing.SystemColors.Window;
+            txtRackAlto.BackColor = System.Drawing.SystemColors.Window;
+
+            txtCodigoRack.Focus();
         }
 
         private void btnBuscarCatalogo_Click(object sender, EventArgs e)

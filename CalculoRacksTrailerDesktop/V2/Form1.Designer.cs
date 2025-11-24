@@ -228,6 +228,7 @@ namespace CalculoRacksTrailerDesktop.V2
             txtCodigoRack.Name = "txtCodigoRack";
             txtCodigoRack.Size = new Size(150, 27);
             txtCodigoRack.TabIndex = 11;
+            txtCodigoRack.TextChanged += txtCodigoRack_TextChanged;
             // 
             // lblRackLargo
             // 
