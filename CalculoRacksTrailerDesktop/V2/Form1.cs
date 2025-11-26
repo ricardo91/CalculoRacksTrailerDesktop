@@ -42,7 +42,7 @@ namespace CalculoRacksTrailerDesktop.V2
             txtRackAncho.ReadOnly = true;
             txtRackAlto.ReadOnly = true;
 
-            rtbResultado.AppendText($"Tráiler configurado automáticamente: {trailerLargo}×{trailerAncho}×{trailerAlto}mm\n\n");
+            rtbResultado.AppendText($"Tráiler configurado automáticamente: {trailerLargo}×{trailerAncho}×{trailerAlto}mm{Environment.NewLine}{Environment.NewLine}");
 
             // Cargar catálogo de racks desde CSV
             CargarCatalogoRacks();
@@ -50,14 +50,18 @@ namespace CalculoRacksTrailerDesktop.V2
 
         private void CargarCatalogoRacks()
         {
-            string csvPath = System.IO.Path.Combine(
-                System.IO.Path.GetDirectoryName(Application.ExecutablePath),
-                "racks_catalog.csv");
+            string? exeDir = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
+            if (string.IsNullOrEmpty(exeDir))
+            {
+                MessageBox.Show("No se pudo determinar la carpeta del ejecutable.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            string csvPath = System.IO.Path.Combine(exeDir, "racks_catalog.csv");
 
             if (!System.IO.File.Exists(csvPath))
             {
-                rtbResultado.AppendText("⚠ Archivo 'racks_catalog.csv' no encontrado.\n");
-                rtbResultado.AppendText("Se creará un archivo de ejemplo en la carpeta del programa.\n\n");
+                rtbResultado.AppendText($"⚠ Archivo 'racks_catalog.csv' no encontrado.{Environment.NewLine}");
+                rtbResultado.AppendText($"Se creará un archivo de ejemplo en la carpeta del programa.{Environment.NewLine}{Environment.NewLine}");
                 CrearArchivoEjemplo(csvPath);
                 return;
             }
@@ -83,7 +87,7 @@ namespace CalculoRacksTrailerDesktop.V2
                             double.TryParse(parts[2].Trim(), out double ancho) &&
                             double.TryParse(parts[3].Trim(), out double alto))
                         {
-                            string descripcion = parts.Length > 4 ? parts[4].Trim() : "";
+                            string descripcion = parts.Length > 4 ? parts[4].Trim() : string.Empty;
 
                             rackCatalog[codigo.ToUpper()] = new RackData
                             {
@@ -105,7 +109,7 @@ namespace CalculoRacksTrailerDesktop.V2
                 rtbResultado.AppendText($"✓ Catálogo cargado: {loaded} racks disponibles");
                 if (errors > 0)
                     rtbResultado.AppendText($" ({errors} líneas con errores ignoradas)");
-                rtbResultado.AppendText("\n\n");
+                rtbResultado.AppendText($"{Environment.NewLine}{Environment.NewLine}");
             }
             catch (Exception ex)
             {
@@ -119,22 +123,47 @@ namespace CalculoRacksTrailerDesktop.V2
             try
             {
                 var ejemplo = new System.Text.StringBuilder();
-                ejemplo.AppendLine("Codigo,Largo,Ancho,Alto,Descripcion");
-                ejemplo.AppendLine("00518,1670,1200,900,Rack estándar A");
-                ejemplo.AppendLine("04968,3700,2400,1200,Rack grande B");
-                ejemplo.AppendLine("04971,1650,1200,920,Rack estándar C");
-                ejemplo.AppendLine("04993,1650,1200,920,Rack estándar D");
-                ejemplo.AppendLine("10077,1650,1200,920,Rack estándar E");
+                ejemplo.AppendLine("Codigo;Largo;Ancho;Alto;Descripcion");
+                ejemplo.AppendLine("00518;1950;1200;1610;");
+                ejemplo.AppendLine("04968;1670;1200;1100;");
+                ejemplo.AppendLine("04971;1670;1200;1300;");
+                ejemplo.AppendLine("04990;2400;1480;1980;");
+                ejemplo.AppendLine("04993;2400;1480;1380;");
+                ejemplo.AppendLine("10077;1670;1200;900;");
+                ejemplo.AppendLine("10078;1670;1200;920;");
+                ejemplo.AppendLine("10147;1670;1200;920;");
+                ejemplo.AppendLine("40065;2400;1910;1350;");
+                ejemplo.AppendLine("40066;2400;1910;650;");
+                ejemplo.AppendLine("40068;3350;2400;1900;");
+                ejemplo.AppendLine("40070;3700;2400;1900;");
+                ejemplo.AppendLine("40071;3700;2400;1900;");
+                ejemplo.AppendLine("40074;1670;1200;1680;");
+                ejemplo.AppendLine("40075;1670;1200;1680;");
+                ejemplo.AppendLine("40076;1670;1200;1400;");
+                ejemplo.AppendLine("40077;1670;1200;1400;");
+                ejemplo.AppendLine("40078;1670;1200;1350;");
+                ejemplo.AppendLine("40079;1670;1200;1350;");
+                ejemplo.AppendLine("40082;1670;1200;1450;");
+                ejemplo.AppendLine("40083;1670;1200;1450;");
+                ejemplo.AppendLine("40094;3500;1670;1400;");
+                ejemplo.AppendLine("40103;1670;1200;1400;");
+                ejemplo.AppendLine("40104;1480;1200;1350;");
+                ejemplo.AppendLine("40207;2400;1910;1650;");
+                ejemplo.AppendLine("41380;1500;1200;700;");
+                ejemplo.AppendLine("41384;2400;1200;1450;");
+                ejemplo.AppendLine("41385;1340;1200;1440;");
+                ejemplo.AppendLine("41386;2400;1670;925;");
+                ejemplo.AppendLine("41387;2400;1670;925;");
+                ejemplo.AppendLine("41500;1200;1480;700;");
 
                 System.IO.File.WriteAllText(path, ejemplo.ToString());
 
-                rtbResultado.AppendText($"✓ Archivo de ejemplo creado: {path}\n");
-                rtbResultado.AppendText("Edita el archivo y reinicia la aplicación para cargar tus racks.\n\n");
+                rtbResultado.AppendText($"✓ Archivo de ejemplo creado: {path}{Environment.NewLine}");
+                rtbResultado.AppendText($"Edita el archivo y reinicia la aplicación para cargar tus racks.{Environment.NewLine}{Environment.NewLine}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al crear archivo de ejemplo: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al crear archivo de ejemplo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -222,19 +251,19 @@ namespace CalculoRacksTrailerDesktop.V2
             switch (strategy)
             {
                 case PlacementStrategy.GreedyByWidth:
-                    return "Coloca primero las torres más anchas.\nÓptimo para aprovechar el ancho del tráiler.";
+                    return $"Coloca primero las torres más anchas.{Environment.NewLine}Óptimo para aprovechar el ancho del tráiler.";
 
                 case PlacementStrategy.GreedyByLength:
-                    return "Coloca primero las torres más largas.\nÓptimo cuando el largo es limitante.";
+                    return $"Coloca primero las torres más largas.{Environment.NewLine}Óptimo cuando el largo es limitante.";
 
                 case PlacementStrategy.GreedyByArea:
-                    return "Coloca primero las torres más grandes (área).\nBalance entre largo y ancho.";
+                    return $"Coloca primero las torres más grandes (área).{Environment.NewLine}Balance entre largo y ancho.";
 
                 case PlacementStrategy.BestFit:
-                    return "Prueba todas las estrategias y elige la mejor.\nMás lento pero garantiza mejor resultado.";
+                    return $"Prueba todas las estrategias y elige la mejor.{Environment.NewLine}Más lento pero garantiza mejor resultado.";
 
                 default:
-                    return "";
+                    return string.Empty;
             }
         }
 
@@ -242,13 +271,14 @@ namespace CalculoRacksTrailerDesktop.V2
         {
             // Las dimensiones del tráiler son fijas, solo mostramos confirmación
             MessageBox.Show(
-                $"Dimensiones del tráiler (fijas):\n\n" +
-                $"Largo: {trailerLargo}mm\n" +
-                $"Ancho: {trailerAncho}mm\n" +
+                $"Dimensiones del tráiler (fijas):{Environment.NewLine}{Environment.NewLine}" +
+                $"Largo: {trailerLargo}mm{Environment.NewLine}" +
+                $"Ancho: {trailerAncho}mm{Environment.NewLine}" +
                 $"Alto: {trailerAlto}mm",
                 "Configuración del Tráiler",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
+
         }
 
         private void btnAgregarRack_Click(object sender, EventArgs e)
@@ -267,8 +297,8 @@ namespace CalculoRacksTrailerDesktop.V2
             if (!rackCatalog.ContainsKey(codigo))
             {
                 MessageBox.Show(
-                    $"El código '{codigo}' no se encuentra en el catálogo.\n\n" +
-                    $"Racks disponibles: {rackCatalog.Count}\n" +
+                    $"El código '{codigo}' no se encuentra en el catálogo.{Environment.NewLine}{Environment.NewLine}" +
+                    $"Racks disponibles: {rackCatalog.Count}{Environment.NewLine}" +
                     $"Usa el botón '🔍 Ver Catálogo' para ver la lista completa.",
                     "Código no encontrado",
                     MessageBoxButtons.OK,
@@ -297,7 +327,7 @@ namespace CalculoRacksTrailerDesktop.V2
             if (!TrailerCalculator.UnitFitsSingle(largo, ancho, alto,
                 trailerLargo, trailerAncho, trailerAlto))
             {
-                rtbResultado.AppendText($"❌ ERROR → El rack {codigo} ({largo}×{ancho}×{alto}) no cabe en el tráiler.\n");
+                rtbResultado.AppendText($"❌ ERROR → El rack {codigo} ({largo}×{ancho}×{alto}) no cabe en el tráiler.{Environment.NewLine}");
                 return;
             }
 
@@ -320,17 +350,17 @@ namespace CalculoRacksTrailerDesktop.V2
 
             if (!ok)
             {
-                rtbResultado.AppendText($"❌ NO CABE → {codigo}: {reason}\n");
+                rtbResultado.AppendText($"❌ NO CABE → {codigo}: {reason}{Environment.NewLine}");
                 return;
             }
 
             groups = temp;
 
-            string desc = !string.IsNullOrEmpty(rackData.Descripcion) ? $" ({rackData.Descripcion})" : "";
-            rtbResultado.AppendText($"✓ {unidades}x {codigo}{desc} - {largo}×{ancho}×{alto}mm\n");
+            string desc = !string.IsNullOrEmpty(rackData.Descripcion) ? $" ({rackData.Descripcion})" : string.Empty;
+            rtbResultado.AppendText($"✓ {unidades}x {codigo}{desc} - {largo}×{ancho}×{alto}mm{Environment.NewLine}");
 
             if (!string.IsNullOrEmpty(reason))
-                rtbResultado.AppendText($"  {reason}\n");
+                rtbResultado.AppendText($"  {reason}{Environment.NewLine}");
 
             // Limpiar para el próximo
             txtCodigoRack.Clear();
@@ -345,8 +375,10 @@ namespace CalculoRacksTrailerDesktop.V2
 
         private void MostrarResumen()
         {
-            rtbResultado.AppendText("\n--- Resumen ---\n");
-            rtbResultado.AppendText($"Estrategia: {GetStrategyName(currentStrategy)}\n\n");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText("--- Resumen ---");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText($"Estrategia: {GetStrategyName(currentStrategy)}{Environment.NewLine}{Environment.NewLine}");
 
             int i = 1;
 
@@ -354,11 +386,12 @@ namespace CalculoRacksTrailerDesktop.V2
             {
                 var g = kv.Value;
                 rtbResultado.AppendText(
-                    $"{i}. {g.Largo}×{g.Ancho} → {g.UnitHeights.Count} unidades, códigos: {string.Join(",", g.Codes)}\n");
+                    $"{i}. {g.Largo}×{g.Ancho} → {g.UnitHeights.Count} unidades, códigos: {string.Join(",", g.Codes)}{Environment.NewLine}");
                 i++;
             }
 
-            rtbResultado.AppendText("----------------\n");
+            rtbResultado.AppendText("----------------");
+            rtbResultado.AppendText(Environment.NewLine);
         }
 
         private string GetStrategyName(PlacementStrategy strategy)
@@ -380,9 +413,10 @@ namespace CalculoRacksTrailerDesktop.V2
 
         private void DibujarDiagrama()
         {
-            rtbResultado.AppendText("\n╔════════════════════════════════════════════════════════════╗\n");
-            rtbResultado.AppendText("║            DIAGRAMA - VISTA SUPERIOR DEL TRÁILER           ║\n");
-            rtbResultado.AppendText("╚════════════════════════════════════════════════════════════╝\n\n");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText($"╔════════════════════════════════════════════════════════════╗{Environment.NewLine}");
+            rtbResultado.AppendText($"║            DIAGRAMA - VISTA SUPERIOR DEL TRÁILER           ║{Environment.NewLine}");
+            rtbResultado.AppendText($"╚════════════════════════════════════════════════════════════╝{Environment.NewLine}{Environment.NewLine}");
 
             // 1. Crear torres
             var towers = new List<(string code, double largo, double ancho, double alto)>();
@@ -411,7 +445,7 @@ namespace CalculoRacksTrailerDesktop.V2
 
             if (towers.Count == 0)
             {
-                rtbResultado.AppendText("No hay racks para mostrar.\n");
+                rtbResultado.AppendText($"No hay racks para mostrar.{Environment.NewLine}");
                 return;
             }
 
@@ -450,21 +484,24 @@ namespace CalculoRacksTrailerDesktop.V2
             double totalLargoUsado = rowMaxLargos.Sum();
 
             // 5. Dibujar información del tráiler
-            rtbResultado.AppendText($"Dimensiones del tráiler:\n");
-            rtbResultado.AppendText($"  • Largo (profundidad): {trailerLargo:F0}mm\n");
-            rtbResultado.AppendText($"  • Ancho (lado a lado): {trailerAncho:F0}mm\n");
-            rtbResultado.AppendText($"  • Alto: {trailerAlto:F0}mm\n\n");
-            rtbResultado.AppendText($"Uso del espacio:\n");
-            rtbResultado.AppendText($"  • Largo usado: {totalLargoUsado:F0}mm de {trailerLargo:F0}mm ({(totalLargoUsado / trailerLargo * 100):F1}%)\n");
-            rtbResultado.AppendText($"  • Torres colocadas: {towers.Count}\n");
-            rtbResultado.AppendText($"  • Filas creadas: {rows.Count}\n\n");
+            rtbResultado.AppendText($"Dimensiones del tráiler:{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Largo (profundidad): {trailerLargo:F0}mm{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Ancho (lado a lado): {trailerAncho:F0}mm{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Alto: {trailerAlto:F0}mm{Environment.NewLine}{Environment.NewLine}");
+            rtbResultado.AppendText($"Uso del espacio:{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Largo usado: {totalLargoUsado:F0}mm de {trailerLargo:F0}mm ({(totalLargoUsado / trailerLargo * 100):F1}%){Environment.NewLine}");
+            rtbResultado.AppendText($"  • Torres colocadas: {towers.Count}{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Filas creadas: {rows.Count}{Environment.NewLine}{Environment.NewLine}");
 
             // 6. Dibujar vista superior (mirando desde arriba)
             int diagramWidth = 68;
 
-            rtbResultado.AppendText("           ┌" + new string('─', diagramWidth) + "┐\n");
-            rtbResultado.AppendText("           │" + " FRENTE DEL TRÁILER ".PadLeft((diagramWidth + 20) / 2).PadRight(diagramWidth) + "│\n");
-            rtbResultado.AppendText("        ↑  ├" + new string('─', diagramWidth) + "┤\n");
+            rtbResultado.AppendText("           ┌" + new string('─', diagramWidth) + "┐");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText("           │" + " FRENTE DEL TRÁILER ".PadLeft((diagramWidth + 20) / 2).PadRight(diagramWidth) + "│");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText("        ↑  ├" + new string('─', diagramWidth) + "┤");
+            rtbResultado.AppendText(Environment.NewLine);
 
             int rowNumber = 1;
 
@@ -474,8 +511,9 @@ namespace CalculoRacksTrailerDesktop.V2
                 double rowLargo = rowMaxLargos[rowIndex];
                 double rowAnchoTotal = row.Sum(t => t.ancho);
 
-                rtbResultado.AppendText($"        │  │ Profundidad: {rowLargo:F0}mm | Ancho usado: {rowAnchoTotal:F0}/{trailerAncho:F0}mm (FILA {rowNumber})\n");
-                rtbResultado.AppendText($" LARGO  │  ├" + new string('─', diagramWidth) + "┤\n");
+                rtbResultado.AppendText($"        │  │ Profundidad: {rowLargo:F0}mm | Ancho usado: {rowAnchoTotal:F0}/{trailerAncho:F0}mm (FILA {rowNumber}){Environment.NewLine}");
+                rtbResultado.AppendText($" LARGO  │  ├" + new string('─', diagramWidth) + "┤");
+                rtbResultado.AppendText(Environment.NewLine);
 
                 // Dibujar las torres de esta fila
                 int numLines = 3;
@@ -516,7 +554,8 @@ namespace CalculoRacksTrailerDesktop.V2
                     if (remainingWidth > 0)
                         rtbResultado.AppendText(new string('·', remainingWidth));
 
-                    rtbResultado.AppendText("│\n");
+                    rtbResultado.AppendText("│");
+                    rtbResultado.AppendText(Environment.NewLine);
                 }
 
                 rowNumber++;
@@ -526,28 +565,34 @@ namespace CalculoRacksTrailerDesktop.V2
             double espacioVacio = trailerLargo - totalLargoUsado;
             if (espacioVacio > 10)
             {
-                rtbResultado.AppendText("        │  ├" + new string('─', diagramWidth) + "┤\n");
+                rtbResultado.AppendText("        │  ├" + new string('─', diagramWidth) + "┤");
+                rtbResultado.AppendText(Environment.NewLine);
                 rtbResultado.AppendText($" {trailerLargo:F0}mm │  │ [ ESPACIO VACÍO: {espacioVacio:F0}mm de profundidad restante ]");
-                rtbResultado.AppendText(new string(' ', Math.Max(0, diagramWidth - 52)) + "│\n");
+                rtbResultado.AppendText(new string(' ', Math.Max(0, diagramWidth - 52)) + "│");
+                rtbResultado.AppendText(Environment.NewLine);
             }
 
-            rtbResultado.AppendText("        ↓  ├" + new string('─', diagramWidth) + "┤\n");
-            rtbResultado.AppendText("           │" + " PARTE TRASERA ".PadLeft((diagramWidth + 15) / 2).PadRight(diagramWidth) + "│\n");
-            rtbResultado.AppendText("           └" + new string('─', diagramWidth) + "┘\n");
-            rtbResultado.AppendText("            ←" + new string('─', diagramWidth - 2) + "→\n");
-            rtbResultado.AppendText($"             ANCHO DEL TRÁILER ({trailerAncho:F0}mm)\n\n");
+            rtbResultado.AppendText("        ↓  ├" + new string('─', diagramWidth) + "┤");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText("           │" + " PARTE TRASERA ".PadLeft((diagramWidth + 15) / 2).PadRight(diagramWidth) + "│");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText("           └" + new string('─', diagramWidth) + "┘");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText("            ←" + new string('─', diagramWidth - 2) + "→");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText($"             ANCHO DEL TRÁILER ({trailerAncho:F0}mm){Environment.NewLine}{Environment.NewLine}");
 
             // 7. Leyenda detallada
-            rtbResultado.AppendText("═══════════════════════════════════════════════════════════\n");
-            rtbResultado.AppendText("LEYENDA:\n");
-            rtbResultado.AppendText("  • Vista desde arriba del tráiler\n");
-            rtbResultado.AppendText("  • Cada caja representa una torre de racks apilados\n");
-            rtbResultado.AppendText("  • Formato dentro: ANCHO×LARGO(ALTURA) - todas en mm\n");
-            rtbResultado.AppendText("  • Las torres se colocan DE IZQUIERDA A DERECHA\n");
-            rtbResultado.AppendText("  • Profundidad de fila = LARGO máximo de sus torres\n");
-            rtbResultado.AppendText("  • Nueva fila cuando el ancho acumulado excede " + trailerAncho + "mm\n");
-            rtbResultado.AppendText("  • Los puntos (···) indican ancho sin utilizar\n");
-            rtbResultado.AppendText("═══════════════════════════════════════════════════════════\n");
+            rtbResultado.AppendText($"═══════════════════════════════════════════════════════════{Environment.NewLine}");
+            rtbResultado.AppendText($"LEYENDA:{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Vista desde arriba del tráiler{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Cada caja representa una torre de racks apilados{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Formato dentro: ANCHO×LARGO(ALTURA) - todas en mm{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Las torres se colocan DE IZQUIERDA A DERECHA{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Profundidad de fila = LARGO máximo de sus torres{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Nueva fila cuando el ancho acumulado excede {trailerAncho}mm{Environment.NewLine}");
+            rtbResultado.AppendText($"  • Los puntos (···) indican ancho sin utilizar{Environment.NewLine}");
+            rtbResultado.AppendText($"═══════════════════════════════════════════════════════════{Environment.NewLine}");
         }
 
         private void btnLimpiarRack_Click(object sender, EventArgs e)
@@ -571,53 +616,55 @@ namespace CalculoRacksTrailerDesktop.V2
             if (rackCatalog.Count == 0)
             {
                 MessageBox.Show(
-                    "No hay racks en el catálogo.\n\n" +
-                    "Asegúrate de que el archivo 'racks_catalog.csv' existe " +
-                    "en la carpeta del programa y contiene datos válidos.",
-                    "Catálogo vacío",
+                    $"No hay racks en el catálogo.{Environment.NewLine}{Environment.NewLine}" +
+                    $"Asegúrate de que el archivo 'racks_catalog.csv' existe " +
+                    $"en la carpeta del programa y contiene datos válidos.",
+                    $"Catálogo vacío",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
                 return;
             }
 
-            rtbResultado.AppendText("\n╔════════════════════════════════════════════════════════════╗\n");
-            rtbResultado.AppendText("║                   CATÁLOGO DE RACKS                        ║\n");
-            rtbResultado.AppendText("╚════════════════════════════════════════════════════════════╝\n\n");
+            rtbResultado.AppendText(Environment.NewLine);
+            rtbResultado.AppendText($"╔════════════════════════════════════════════════════════════╗{Environment.NewLine}");
+            rtbResultado.AppendText($"║                   CATÁLOGO DE RACKS                        ║{Environment.NewLine}");
+            rtbResultado.AppendText($"╚════════════════════════════════════════════════════════════╝{Environment.NewLine}{Environment.NewLine}");
 
-            rtbResultado.AppendText($"Total de racks disponibles: {rackCatalog.Count}\n\n");
-            rtbResultado.AppendText(string.Format("{0,-10} {1,-10} {2,-10} {3,-10} {4}\n",
-                "Código", "Largo", "Ancho", "Alto", "Descripción"));
-            rtbResultado.AppendText(new string('─', 70) + "\n");
+            rtbResultado.AppendText($"Total de racks disponibles: {rackCatalog.Count}{Environment.NewLine}{Environment.NewLine}");
+            rtbResultado.AppendText(string.Format("{0,-10} {1,-10} {2,-10} {3,-10} {4}{5}",
+                "Código", "Largo", "Ancho", "Alto", "Descripción", Environment.NewLine));
+            rtbResultado.AppendText(new string('─', 70) + Environment.NewLine);
 
             foreach (var rack in rackCatalog.Values.OrderBy(r => r.Codigo))
             {
-                rtbResultado.AppendText(string.Format("{0,-10} {1,-10:F0} {2,-10:F0} {3,-10:F0} {4}\n",
+                rtbResultado.AppendText(string.Format("{0,-10} {1,-10:F0} {2,-10:F0} {3,-10:F0} {4}{5}",
                     rack.Codigo,
                     rack.Largo,
                     rack.Ancho,
                     rack.Alto,
-                    rack.Descripcion));
+                    rack.Descripcion,
+                    Environment.NewLine));
             }
 
-            rtbResultado.AppendText("\n" + new string('═', 70) + "\n");
+            rtbResultado.AppendText(Environment.NewLine + new string('═', 70) + Environment.NewLine);
         }
 
         private void btnLimpiarResultado_Click(object sender, EventArgs e)
         {
             var result = MessageBox.Show(
-                "¿Deseas limpiar el panel de resultado?\n\n" +
-                "Esto solo limpiará el texto mostrado, no eliminará los racks agregados al tráiler.",
-                "Limpiar Panel",
+                $"¿Deseas limpiar el panel de resultado?{Environment.NewLine}{Environment.NewLine}" +
+                $"Esto solo limpiará el texto mostrado, no eliminará los racks agregados al tráiler.",
+                $"Limpiar Panel",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
                 rtbResultado.Clear();
-                rtbResultado.AppendText($"Panel limpiado.\n");
+                rtbResultado.AppendText($"Panel limpiado.{Environment.NewLine}");
                 rtbResultado.AppendText($"Tráiler: {trailerLargo}×{trailerAncho}×{trailerAlto}mm | ");
                 rtbResultado.AppendText($"Catálogo: {rackCatalog.Count} racks | ");
-                rtbResultado.AppendText($"Racks agregados: {groups.Sum(g => g.Value.UnitHeights.Count)}\n\n");
+                rtbResultado.AppendText($"Racks agregados: {groups.Sum(g => g.Value.UnitHeights.Count)}{Environment.NewLine}{Environment.NewLine}");
             }
         }
 
@@ -632,9 +679,9 @@ namespace CalculoRacksTrailerDesktop.V2
             groups = new Dictionary<string, Group>();
 
             rtbResultado.Clear();
-            rtbResultado.AppendText($"Tráiler configurado: {trailerLargo}×{trailerAncho}×{trailerAlto}mm\n");
-            rtbResultado.AppendText($"Catálogo: {rackCatalog.Count} racks disponibles\n\n");
-            rtbResultado.AppendText("Nuevo proyecto iniciado.\n");
+            rtbResultado.AppendText($"Tráiler configurado: {trailerLargo}×{trailerAncho}×{trailerAlto}mm{Environment.NewLine}");
+            rtbResultado.AppendText($"Catálogo: {rackCatalog.Count} racks disponibles{Environment.NewLine}{Environment.NewLine}");
+            rtbResultado.AppendText($"Nuevo proyecto iniciado.{Environment.NewLine}");
         }
     }
 
