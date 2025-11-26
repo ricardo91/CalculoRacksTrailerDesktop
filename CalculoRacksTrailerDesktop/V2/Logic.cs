@@ -188,8 +188,8 @@ namespace CalculoRacksTrailerDesktop.V2
             };
 
             double bestUsedLength = double.MaxValue;
-            string bestStrategy = "";
-            string bestReason = "";
+            string bestStrategy = string.Empty;
+            string bestReason = string.Empty;
 
             foreach (var (strategyName, orderedTowers) in strategies)
             {
