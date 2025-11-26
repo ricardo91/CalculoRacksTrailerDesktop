@@ -7,12 +7,19 @@ namespace CalculoRacksTrailerDesktop.V2
 {
     public partial class Form1 : Form
     {
+        #region Campos privados
+
         private double trailerLargo, trailerAncho, trailerAlto;
         private Dictionary<string, Group> groups = new Dictionary<string, Group>();
         private PlacementStrategy currentStrategy = PlacementStrategy.GreedyByWidth;
 
         // Catálogo de racks cargados desde CSV
         private Dictionary<string, RackData> rackCatalog = new Dictionary<string, RackData>();
+        private const string CSV_FILENAME = "racks_catalog.csv";
+
+        #endregion Campos privados
+
+        #region Constructor e Inicialización
 
         public Form1()
         {
@@ -21,31 +28,54 @@ namespace CalculoRacksTrailerDesktop.V2
             CargarDatosIniciales();
         }
 
+        private void InitializeStrategyComboBox()
+        {
+            cmbStrategy.Items.Clear();
+            cmbStrategy.Items.Add("Greedy - Por Ancho (Rápido)");
+            cmbStrategy.Items.Add("Greedy - Por Largo (Rápido)");
+            cmbStrategy.Items.Add("Greedy - Por Área (Rápido)");
+            cmbStrategy.Items.Add("Best Fit - Mejor Ajuste (Más lento)");
+            cmbStrategy.SelectedIndex = 0;
+        }
+
         private void CargarDatosIniciales()
         {
-            // Cargar dimensiones fijas del tráiler
-            trailerLargo = 13600;
-            trailerAncho = 2500;
-            trailerAlto = 2900;
+            // Configurar dimensiones fijas del tráiler
+            ConfigurarTrailer(largo: 13600, ancho: 2500, alto: 2900);
 
-            txtTrailerLargo.Text = trailerLargo.ToString();
-            txtTrailerAncho.Text = trailerAncho.ToString();
-            txtTrailerAlto.Text = trailerAlto.ToString();
-
-            // Deshabilitar edición de dimensiones del tráiler (son fijas)
-            txtTrailerLargo.ReadOnly = true;
-            txtTrailerAncho.ReadOnly = true;
-            txtTrailerAlto.ReadOnly = true;
-
-            // También deshabilitar edición manual de las dimensiones del rack
-            txtRackLargo.ReadOnly = true;
-            txtRackAncho.ReadOnly = true;
-            txtRackAlto.ReadOnly = true;
+            // Bloquear edición de campos
+            BloquearEdicionCamposTrailer(); // Las dimensiones del tráiler son fijas
+            BloquearEdicionCamposRack(); // Las dimensiones del rack se autocompletan desde el catálogo
 
             rtbResultado.AppendText($"Tráiler configurado automáticamente: {trailerLargo}×{trailerAncho}×{trailerAlto}mm{Environment.NewLine}{Environment.NewLine}");
 
             // Cargar catálogo de racks desde CSV
             CargarCatalogoRacks();
+        }
+
+        private void ConfigurarTrailer(double largo, double ancho, double alto)
+        {
+            trailerLargo = largo;
+            trailerAncho = ancho;
+            trailerAlto = alto;
+
+            txtTrailerLargo.Text = trailerLargo.ToString();
+            txtTrailerAncho.Text = trailerAncho.ToString();
+            txtTrailerAlto.Text = trailerAlto.ToString();
+        }
+
+        private void BloquearEdicionCamposTrailer()
+        {
+            txtTrailerLargo.ReadOnly = true;
+            txtTrailerAncho.ReadOnly = true;
+            txtTrailerAlto.ReadOnly = true;
+        }
+
+        private void BloquearEdicionCamposRack()
+        {
+            txtRackLargo.ReadOnly = true;
+            txtRackAncho.ReadOnly = true;
+            txtRackAlto.ReadOnly = true;
         }
 
         private void CargarCatalogoRacks()
@@ -56,7 +86,7 @@ namespace CalculoRacksTrailerDesktop.V2
                 MessageBox.Show("No se pudo determinar la carpeta del ejecutable.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            string csvPath = System.IO.Path.Combine(exeDir, "racks_catalog.csv");
+            string csvPath = System.IO.Path.Combine(exeDir, CSV_FILENAME);
 
             if (!System.IO.File.Exists(csvPath))
             {
@@ -167,15 +197,8 @@ namespace CalculoRacksTrailerDesktop.V2
             }
         }
 
-        private void InitializeStrategyComboBox()
-        {
-            cmbStrategy.Items.Clear();
-            cmbStrategy.Items.Add("Greedy - Por Ancho (Rápido)");
-            cmbStrategy.Items.Add("Greedy - Por Largo (Rápido)");
-            cmbStrategy.Items.Add("Greedy - Por Área (Rápido)");
-            cmbStrategy.Items.Add("Best Fit - Mejor Ajuste (Más lento)");
-            cmbStrategy.SelectedIndex = 0;
-        }
+        #endregion Constructor e Inicialización
+
 
         private void txtCodigoRack_TextChanged(object sender, EventArgs e)
         {
@@ -246,26 +269,35 @@ namespace CalculoRacksTrailerDesktop.V2
             lblStrategyInfo.Text = description;
         }
 
+        #region Helpers de Estrategia
+
+        private string GetStrategyName(PlacementStrategy strategy)
+        {
+            return strategy switch
+            {
+                PlacementStrategy.GreedyByWidth => "Greedy - Por Ancho",
+                PlacementStrategy.GreedyByLength => "Greedy - Por Largo",
+                PlacementStrategy.GreedyByArea => "Greedy - Por Área",
+                PlacementStrategy.BestFit => "Best Fit",
+                _ => "Desconocida"
+            };
+        }
+
         private string GetStrategyDescription(PlacementStrategy strategy)
         {
-            switch (strategy)
+            return strategy switch
             {
-                case PlacementStrategy.GreedyByWidth:
-                    return $"Coloca primero las torres más anchas.{Environment.NewLine}Óptimo para aprovechar el ancho del tráiler.";
-
-                case PlacementStrategy.GreedyByLength:
-                    return $"Coloca primero las torres más largas.{Environment.NewLine}Óptimo cuando el largo es limitante.";
-
-                case PlacementStrategy.GreedyByArea:
-                    return $"Coloca primero las torres más grandes (área).{Environment.NewLine}Balance entre largo y ancho.";
-
-                case PlacementStrategy.BestFit:
-                    return $"Prueba todas las estrategias y elige la mejor.{Environment.NewLine}Más lento pero garantiza mejor resultado.";
-
-                default:
-                    return string.Empty;
-            }
+                PlacementStrategy.GreedyByWidth => $"Coloca primero las torres más anchas.{Environment.NewLine}Óptimo para aprovechar el ancho del tráiler.",
+                PlacementStrategy.GreedyByLength => $"Coloca primero las torres más largas.{Environment.NewLine}Óptimo cuando el largo es limitante.",
+                PlacementStrategy.GreedyByArea => $"Coloca primero las torres más grandes (área).{Environment.NewLine}Balance entre largo y ancho.",
+                PlacementStrategy.BestFit => $"Prueba todas las estrategias y elige la mejor.{Environment.NewLine}Más lento pero garantiza mejor resultado.",
+                _ => string.Empty
+            };
         }
+
+        #endregion Helpers de Estrategia
+
+        #region Botones
 
         private void btnSetTrailer_Click(object sender, EventArgs e)
         {
@@ -389,18 +421,6 @@ namespace CalculoRacksTrailerDesktop.V2
 
             rtbResultado.AppendText("----------------");
             rtbResultado.AppendText(Environment.NewLine);
-        }
-
-        private string GetStrategyName(PlacementStrategy strategy)
-        {
-            switch (strategy)
-            {
-                case PlacementStrategy.GreedyByWidth: return "Greedy - Por Ancho";
-                case PlacementStrategy.GreedyByLength: return "Greedy - Por Largo";
-                case PlacementStrategy.GreedyByArea: return "Greedy - Por Área";
-                case PlacementStrategy.BestFit: return "Best Fit";
-                default: return "Desconocida";
-            }
         }
 
         private void btnMostrarDiagrama_Click(object sender, EventArgs e)
@@ -594,6 +614,11 @@ namespace CalculoRacksTrailerDesktop.V2
 
         private void btnLimpiarRack_Click(object sender, EventArgs e)
         {
+            LimpiarRack();
+        }
+
+        private void LimpiarRack()
+        {
             txtCodigoRack.Clear();
             txtRackLargo.Clear();
             txtRackAncho.Clear();
@@ -609,6 +634,11 @@ namespace CalculoRacksTrailerDesktop.V2
         }
 
         private void btnBuscarCatalogo_Click(object sender, EventArgs e)
+        {
+            BuscarCatalogo();
+        }
+
+        private void BuscarCatalogo()
         {
             if (rackCatalog.Count == 0)
             {
@@ -667,6 +697,11 @@ namespace CalculoRacksTrailerDesktop.V2
 
         private void btnNuevo_Click(object sender, EventArgs e)
         {
+            IniciarNuevoProyecto();
+        }
+
+        private void IniciarNuevoProyecto()
+        {
             txtCodigoRack.Clear();
             txtRackLargo.Clear();
             txtRackAncho.Clear();
@@ -677,18 +712,28 @@ namespace CalculoRacksTrailerDesktop.V2
 
             rtbResultado.Clear();
             rtbResultado.AppendText($"Tráiler configurado: {trailerLargo}×{trailerAncho}×{trailerAlto}mm{Environment.NewLine}");
-            rtbResultado.AppendText($"Catálogo: {rackCatalog.Count} racks disponibles{Environment.NewLine}{Environment.NewLine}");
-            rtbResultado.AppendText($"Nuevo proyecto iniciado.{Environment.NewLine}");
+
+            if ((rackCatalog?.Count ?? 0) == 0)
+            {
+                CargarCatalogoRacks();
+            }
+
+            rtbResultado.AppendText($"Catálogo: {rackCatalog?.Count ?? 0} racks disponibles{Environment.NewLine}{Environment.NewLine}");
+            rtbResultado.AppendText($"Nuevo proyecto iniciado.{Environment.NewLine}");            
         }
+
+        #endregion Botones
     }
 
-    // Clase para almacenar datos de los racks del catálogo
+    /// <summary>
+    /// Clase para almacenar datos de los racks del catálogo
+    /// </summary>
     public class RackData
     {
-        public string Codigo { get; set; }
+        public string Codigo { get; set; } = string.Empty;
         public double Largo { get; set; }
         public double Ancho { get; set; }
         public double Alto { get; set; }
-        public string Descripcion { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
     }
 }
