@@ -287,8 +287,7 @@ namespace CalculoRacksTrailerDesktop.V2
 
             if (string.IsNullOrEmpty(codigo))
             {
-                MessageBox.Show("Por favor, introduce un código de rack.", "Código requerido",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Por favor, introduce un código de rack.", "Código requerido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtCodigoRack.Focus();
                 return;
             }
@@ -313,8 +312,7 @@ namespace CalculoRacksTrailerDesktop.V2
             // Obtener las unidades
             if (!int.TryParse(txtRackUnidades.Text, out int unidades) || unidades <= 0)
             {
-                MessageBox.Show("Introduce un número válido de unidades (mayor a 0).", "Unidades inválidas",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Introduce un número válido de unidades (mayor a 0).", "Unidades inválidas", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtRackUnidades.Focus();
                 txtRackUnidades.SelectAll();
                 return;
@@ -385,8 +383,7 @@ namespace CalculoRacksTrailerDesktop.V2
             foreach (var kv in groups)
             {
                 var g = kv.Value;
-                rtbResultado.AppendText(
-                    $"{i}. {g.Largo}×{g.Ancho} → {g.UnitHeights.Count} unidades, códigos: {string.Join(",", g.Codes)}{Environment.NewLine}");
+                rtbResultado.AppendText($"{i}. {g.Largo}×{g.Ancho} → {g.UnitHeights.Count} unidades, códigos: {string.Join(",", g.Codes)}{Environment.NewLine}");
                 i++;
             }
 
