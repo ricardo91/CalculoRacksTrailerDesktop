@@ -1,0 +1,52 @@
+# Qué hace este workflow:
+
+# Se dispara en push o pull request a la rama main.
+# Usa un runner de Windows (porque generar .exe).
+# Clona el repositorio y configura .NET.
+# Restaura dependencias y compila el proyecto.
+# Publica un ejecutable self-contained: incluye todas las librerías necesarias, así se puede ejecutar en otra máquina sin instalar .NET.
+# Sube la carpeta publish como artefacto descargable desde la pestaña Actions de GitHub.
+
+name: Build and Publish Executable
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # 1. Clonar el repositorio
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Instalar .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 10.0.x  # Ajusta según tu proyecto
+
+      # 3. Restaurar dependencias
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # 4. Compilar proyecto
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
+
+      # 5. Publicar ejecutable listo para usar
+      - name: Publish executable
+        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true --output ./publish
+
+      # 6. Subir ejecutable como artefacto
+      - name: Upload executable
+        uses: actions/upload-artifact@v3
+        with:
+          name: CalculoRacksTrailer-Executable
+          path: ./publish
