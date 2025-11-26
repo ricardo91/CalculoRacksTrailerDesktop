@@ -1,0 +1,36 @@
+# Qué hace este workflow:
+# Se dispara con cada push o pull request a la rama master.
+# Utiliza un runner Windows, ya que tu proyecto es desktop/Windows (presumiblemente).
+# Instala .NET (usarás versión 8.0 — ajustable si usas otra). 
+# Restaura dependencias, compila la solución en modo Release.
+# (Opcional) corre tests si los agregas más tarde.
+
+name: .NET Build CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build CalculoRacksTrailerDesktop.slnx --configuration Release --no-restore
+
+    # Si en el futuro agregas tests, descomenta:
+    # - name: Run tests
+    #   run: dotnet test --no-build
