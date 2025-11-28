@@ -2,7 +2,7 @@
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace CalculoRacksTrailerDesktop.V2
+namespace CalculoRacksTrailerDesktop.V2.Views
 {
     partial class Form1
     {

@@ -1,45 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CalculoRacksTrailerDesktop.V2.Models;
+using CalculoRacksTrailerDesktop.V2.Utils;
 
-namespace CalculoRacksTrailerDesktop.V2
+namespace CalculoRacksTrailerDesktop.V2.Services
 {
-    public class Group
-    {
-        public double Largo { get; }
-        public double Ancho { get; }
-
-        public List<double> UnitHeights { get; } = new List<double>();
-        public List<string> Codes { get; } = new List<string>();
-
-        public Group(double largo, double ancho)
-        {
-            Largo = largo;
-            Ancho = ancho;
-        }
-    }
-
-    public class Tower
-    {
-        public double Largo { get; }
-        public double Ancho { get; }
-        public double Alto { get; }
-        public Tower(double largo, double ancho, double alto)
-        {
-            Largo = largo;
-            Ancho = ancho;
-            Alto = alto;
-        }
-    }
-
-    public enum PlacementStrategy
-    {
-        GreedyByWidth,      // Ordenar por ancho (más anchas primero)
-        GreedyByLength,     // Ordenar por largo (más largas primero)
-        GreedyByArea,       // Ordenar por área (más grandes primero)
-        BestFit             // Probar múltiples estrategias y elegir la mejor
-    }
-
     public static class TrailerCalculator
     {
         public static bool UnitFitsSingle(double largo, double ancho, double alto, double trailerLargo, double trailerAncho, double trailerAlto)

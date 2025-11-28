@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using CalculoRacksTrailerDesktop.V2.Models;
+using CalculoRacksTrailerDesktop.V2.Services;
+using CalculoRacksTrailerDesktop.V2.Utils;
 
-namespace CalculoRacksTrailerDesktop.V2
+namespace CalculoRacksTrailerDesktop.V2.Views
 {
     public partial class Form1 : Form
     {
@@ -14,7 +17,7 @@ namespace CalculoRacksTrailerDesktop.V2
         private PlacementStrategy currentStrategy = PlacementStrategy.GreedyByWidth;
 
         // Catálogo de racks cargados desde CSV
-        private Dictionary<string, RackData> rackCatalog = new Dictionary<string, RackData>();
+        private Dictionary<string, Rack> rackCatalog = new Dictionary<string, Rack>();
         private const string CSV_FILENAME = "racks_catalog.csv";
 
         #endregion Campos privados
@@ -119,7 +122,7 @@ namespace CalculoRacksTrailerDesktop.V2
                         {
                             string descripcion = parts.Length > 4 ? parts[4].Trim() : string.Empty;
 
-                            rackCatalog[codigo.ToUpper()] = new RackData
+                            rackCatalog[codigo.ToUpper()] = new Rack
                             {
                                 Codigo = codigo,
                                 Largo = largo,
@@ -723,17 +726,5 @@ namespace CalculoRacksTrailerDesktop.V2
         }
 
         #endregion Botones
-    }
-
-    /// <summary>
-    /// Clase para almacenar datos de los racks del catálogo
-    /// </summary>
-    public class RackData
-    {
-        public string Codigo { get; set; } = string.Empty;
-        public double Largo { get; set; }
-        public double Ancho { get; set; }
-        public double Alto { get; set; }
-        public string Descripcion { get; set; } = string.Empty;
     }
 }

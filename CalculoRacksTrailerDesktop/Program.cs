@@ -12,7 +12,7 @@ namespace CalculoRacksTrailerDesktop
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             //Application.Run(new V1.Form1());
-            Application.Run(new V2.Form1());
+            Application.Run(new V2.Views.Form1());
         }
     }
 }
