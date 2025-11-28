@@ -6,9 +6,21 @@ namespace CalculoRacksTrailerDesktop.V2.Utils
 {
     public enum PlacementStrategy
     {
-        GreedyByWidth,      // Ordenar por ancho (más anchas primero)
-        GreedyByLength,     // Ordenar por largo (más largas primero)
-        GreedyByArea,       // Ordenar por área (más grandes primero)
-        BestFit             // Probar múltiples estrategias y elegir la mejor
+        /// <summary>
+        /// Ordenar por ancho (más anchas primero)
+        /// </summary>
+        GreedyByWidth,
+        /// <summary>
+        /// Ordenar por largo (más largas primero)
+        /// </summary>
+        GreedyByLength,
+        /// <summary>
+        /// Ordenar por área (más grandes primero)
+        /// </summary>
+        GreedyByArea,
+        /// <summary>
+        /// Probar múltiples estrategias y elegir la mejor
+        /// </summary>
+        BestFit
     }
 }

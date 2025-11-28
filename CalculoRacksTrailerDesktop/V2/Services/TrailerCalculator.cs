@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using CalculoRacksTrailerDesktop.V2.Models;
 using CalculoRacksTrailerDesktop.V2.Utils;
 
@@ -8,6 +9,8 @@ namespace CalculoRacksTrailerDesktop.V2.Services
 {
     public static class TrailerCalculator
     {
+        #region Métodos públicos
+
         public static bool UnitFitsSingle(double largo, double ancho, double alto, double trailerLargo, double trailerAncho, double trailerAlto)
             => largo <= trailerLargo && ancho <= trailerAncho && alto <= trailerAlto;
 
@@ -17,10 +20,10 @@ namespace CalculoRacksTrailerDesktop.V2.Services
 
             foreach (var kv in original)
             {
-                var g = new Group(kv.Value.Largo, kv.Value.Ancho);
-                g.UnitHeights.AddRange(kv.Value.UnitHeights);
-                g.Codes.AddRange(kv.Value.Codes.Distinct());
-                clone[kv.Key] = g;
+                var group = new Group(kv.Value.Largo, kv.Value.Ancho);
+                group.UnitHeights.AddRange(kv.Value.UnitHeights);
+                group.Codes.AddRange(kv.Value.Codes.Distinct());
+                clone[kv.Key] = group;
             }
 
             return clone;
@@ -64,6 +67,10 @@ namespace CalculoRacksTrailerDesktop.V2.Services
                     return false;
             }
         }
+
+        #endregion Métodos públicos
+
+        #region Métodos privados
 
         private static List<Tower> CreateTowers(Dictionary<string, Group> groups, double trailerAlto)
         {
@@ -207,5 +214,7 @@ namespace CalculoRacksTrailerDesktop.V2.Services
             usedLength += rowMaxLargo;
             return usedLength;
         }
+
+        #endregion Métodos privados
     }
 }

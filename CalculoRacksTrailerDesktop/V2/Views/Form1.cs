@@ -81,6 +81,20 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             txtRackAlto.ReadOnly = true;
         }
 
+        private void LimpiarCamposDimensionesRack()
+        {
+            txtRackLargo.Clear();
+            txtRackAncho.Clear();
+            txtRackAlto.Clear();
+        }
+
+        private void SetBackColorCamposRack(System.Drawing.Color color)
+        {
+            txtRackLargo.BackColor = color;
+            txtRackAncho.BackColor = color;
+            txtRackAlto.BackColor = color;
+        }
+
         private void CargarCatalogoRacks()
         {
             string? exeDir = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
@@ -102,6 +116,12 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             try
             {
                 var lines = System.IO.File.ReadAllLines(csvPath);
+                if (lines.Length == 0)
+                {
+                    rtbResultado.AppendText($"⚠ Archivo vacío: {csvPath}{Environment.NewLine}{Environment.NewLine}");
+                    return;
+                }
+
                 int loaded = 0;
                 int errors = 0;
 
@@ -141,13 +161,14 @@ namespace CalculoRacksTrailerDesktop.V2.Views
 
                 rtbResultado.AppendText($"✓ Catálogo cargado: {loaded} racks disponibles");
                 if (errors > 0)
+                {
                     rtbResultado.AppendText($" ({errors} líneas con errores ignoradas)");
+                }
                 rtbResultado.AppendText($"{Environment.NewLine}{Environment.NewLine}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar el catálogo: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al cargar el catálogo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -210,29 +231,21 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             if (string.IsNullOrEmpty(codigo))
             {
                 // Limpiar campos si el código está vacío
-                txtRackLargo.Clear();
-                txtRackAncho.Clear();
-                txtRackAlto.Clear();
-                txtRackLargo.BackColor = System.Drawing.SystemColors.Window;
-                txtRackAncho.BackColor = System.Drawing.SystemColors.Window;
-                txtRackAlto.BackColor = System.Drawing.SystemColors.Window;
+                LimpiarCamposDimensionesRack();
+                SetBackColorCamposRack(System.Drawing.SystemColors.Window);
                 return;
             }
 
             // Buscar en el catálogo
-            if (rackCatalog.ContainsKey(codigo))
+            if (rackCatalog.TryGetValue(codigo, out Rack? rack))
             {
-                var rackData = rackCatalog[codigo];
-
                 // Autocompletar los campos
-                txtRackLargo.Text = rackData.Largo.ToString();
-                txtRackAncho.Text = rackData.Ancho.ToString();
-                txtRackAlto.Text = rackData.Alto.ToString();
+                txtRackLargo.Text = rack.Largo.ToString();
+                txtRackAncho.Text = rack.Ancho.ToString();
+                txtRackAlto.Text = rack.Alto.ToString();
 
                 // Fondo verde claro para indicar que se encontró
-                txtRackLargo.BackColor = System.Drawing.Color.LightGreen;
-                txtRackAncho.BackColor = System.Drawing.Color.LightGreen;
-                txtRackAlto.BackColor = System.Drawing.Color.LightGreen;
+                SetBackColorCamposRack(System.Drawing.Color.LightGreen);               
 
                 // Enfocar el campo de unidades para que el usuario pueda continuar
                 if (!string.IsNullOrEmpty(txtCodigoRack.Text) && txtRackUnidades.Text.Length == 0)
@@ -244,30 +257,15 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             else
             {
                 // Limpiar campos si no se encuentra
-                txtRackLargo.Clear();
-                txtRackAncho.Clear();
-                txtRackAlto.Clear();
-
-                // Fondo amarillo claro para indicar que no se encontró
-                if (codigo.Length > 2) // Solo mostrar si ya escribió algo significativo
-                {
-                    txtRackLargo.BackColor = System.Drawing.Color.LightYellow;
-                    txtRackAncho.BackColor = System.Drawing.Color.LightYellow;
-                    txtRackAlto.BackColor = System.Drawing.Color.LightYellow;
-                }
-                else
-                {
-                    txtRackLargo.BackColor = System.Drawing.SystemColors.Window;
-                    txtRackAncho.BackColor = System.Drawing.SystemColors.Window;
-                    txtRackAlto.BackColor = System.Drawing.SystemColors.Window;
-                }
+                LimpiarCamposDimensionesRack();
+                // Fondo amarillo claro para indicar que no se encontró. Solo mostrar si ya escribió algo significativo
+                SetBackColorCamposRack(codigo.Length > 2 ? System.Drawing.Color.LightYellow : System.Drawing.SystemColors.Window);
             }
         }
 
         private void cmbStrategy_SelectedIndexChanged(object sender, EventArgs e)
         {
             currentStrategy = (PlacementStrategy)cmbStrategy.SelectedIndex;
-
             string description = GetStrategyDescription(currentStrategy);
             lblStrategyInfo.Text = description;
         }
@@ -313,7 +311,6 @@ namespace CalculoRacksTrailerDesktop.V2.Views
                 "Configuración del Tráiler",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
-
         }
 
         private void btnAgregarRack_Click(object sender, EventArgs e)
@@ -328,7 +325,7 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             }
 
             // Buscar en el catálogo
-            if (!rackCatalog.ContainsKey(codigo))
+            if (!rackCatalog.TryGetValue(codigo, out Rack? rack))
             {
                 MessageBox.Show(
                     $"El código '{codigo}' no se encuentra en el catálogo.{Environment.NewLine}{Environment.NewLine}" +
@@ -342,8 +339,7 @@ namespace CalculoRacksTrailerDesktop.V2.Views
                 return;
             }
 
-            var rackData = rackCatalog[codigo];
-
+            // Rack existente
             // Obtener las unidades
             if (!int.TryParse(txtRackUnidades.Text, out int unidades) || unidades <= 0)
             {
@@ -353,9 +349,9 @@ namespace CalculoRacksTrailerDesktop.V2.Views
                 return;
             }
 
-            double largo = rackData.Largo;
-            double ancho = rackData.Ancho;
-            double alto = rackData.Alto;
+            double largo = rack.Largo;
+            double ancho = rack.Ancho;
+            double alto = rack.Alto;
 
             if (!TrailerCalculator.UnitFitsSingle(largo, ancho, alto,
                 trailerLargo, trailerAncho, trailerAlto))
@@ -369,17 +365,22 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             string key = $"{largo}x{ancho}";
 
             if (!temp.ContainsKey(key))
+            {
                 temp[key] = new Group(largo, ancho);
+            }                
 
             for (int i = 0; i < unidades; i++)
+            {
                 temp[key].UnitHeights.Add(alto);
+            }                
 
             if (!temp[key].Codes.Contains(codigo))
+            {
                 temp[key].Codes.Add(codigo);
+            }                
 
             // Usar la estrategia seleccionada
-            bool ok = TrailerCalculator.TryPlaceAllGroupsOptimized(
-                temp, trailerLargo, trailerAncho, trailerAlto, out string reason, currentStrategy);
+            bool ok = TrailerCalculator.TryPlaceAllGroupsOptimized(temp, trailerLargo, trailerAncho, trailerAlto, out string reason, currentStrategy);
 
             if (!ok)
             {
@@ -389,11 +390,13 @@ namespace CalculoRacksTrailerDesktop.V2.Views
 
             groups = temp;
 
-            string desc = !string.IsNullOrEmpty(rackData.Descripcion) ? $" ({rackData.Descripcion})" : string.Empty;
+            string desc = !string.IsNullOrEmpty(rack.Descripcion) ? $" ({rack.Descripcion})" : string.Empty;
             rtbResultado.AppendText($"✓ {unidades}x {codigo}{desc} - {largo}×{ancho}×{alto}mm{Environment.NewLine}");
 
             if (!string.IsNullOrEmpty(reason))
+            {
                 rtbResultado.AppendText($"  {reason}{Environment.NewLine}");
+            }               
 
             // Limpiar para el próximo
             txtCodigoRack.Clear();
@@ -460,7 +463,9 @@ namespace CalculoRacksTrailerDesktop.V2.Views
                 }
 
                 if (current > 0)
+                {
                     towers.Add((string.Join(",", g.Codes), g.Largo, g.Ancho, current));
+                }                    
             }
 
             if (towers.Count == 0)
@@ -622,16 +627,12 @@ namespace CalculoRacksTrailerDesktop.V2.Views
 
         private void LimpiarRack()
         {
+            LimpiarCamposDimensionesRack();
             txtCodigoRack.Clear();
-            txtRackLargo.Clear();
-            txtRackAncho.Clear();
-            txtRackAlto.Clear();
             txtRackUnidades.Clear();
 
             // Restaurar colores normales
-            txtRackLargo.BackColor = System.Drawing.SystemColors.Window;
-            txtRackAncho.BackColor = System.Drawing.SystemColors.Window;
-            txtRackAlto.BackColor = System.Drawing.SystemColors.Window;
+            SetBackColorCamposRack(System.Drawing.SystemColors.Window);
 
             txtCodigoRack.Focus();
         }
@@ -665,7 +666,7 @@ namespace CalculoRacksTrailerDesktop.V2.Views
                 "Código", "Largo", "Ancho", "Alto", "Descripción", Environment.NewLine));
             rtbResultado.AppendText(new string('─', 70) + Environment.NewLine);
 
-            foreach (var rack in rackCatalog.Values.OrderBy(r => r.Codigo))
+            foreach (Rack rack in rackCatalog.Values.OrderBy(r => r.Codigo))
             {
                 rtbResultado.AppendText(string.Format("{0,-10} {1,-10:F0} {2,-10:F0} {3,-10:F0} {4}{5}",
                     rack.Codigo,
@@ -705,10 +706,8 @@ namespace CalculoRacksTrailerDesktop.V2.Views
 
         private void IniciarNuevoProyecto()
         {
+            LimpiarCamposDimensionesRack();
             txtCodigoRack.Clear();
-            txtRackLargo.Clear();
-            txtRackAncho.Clear();
-            txtRackAlto.Clear();
             txtRackUnidades.Clear();
 
             groups = new Dictionary<string, Group>();
