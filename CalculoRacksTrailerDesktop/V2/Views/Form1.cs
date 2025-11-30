@@ -19,6 +19,7 @@ namespace CalculoRacksTrailerDesktop.V2.Views
         // Catálogo de racks cargados desde CSV
         private Dictionary<string, Rack> rackCatalog = new Dictionary<string, Rack>();
         private const string CSV_FILENAME = "racks_catalog.csv";
+        private static readonly char[] CSV_SEPARATORS = { ',', ';' };
 
         #endregion Campos privados
 
@@ -55,6 +56,8 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             // Cargar catálogo de racks desde CSV
             CargarCatalogoRacks();
         }
+
+        #endregion Constructor e Inicialización
 
         private void ConfigurarTrailer(double largo, double ancho, double alto)
         {
@@ -131,7 +134,7 @@ namespace CalculoRacksTrailerDesktop.V2.Views
                     string line = lines[i].Trim();
                     if (string.IsNullOrWhiteSpace(line)) continue;
 
-                    var parts = line.Split(',', ';');
+                    var parts = line.Split(CSV_SEPARATORS);
                     if (parts.Length >= 4)
                     {
                         string codigo = parts[0].Trim();
@@ -220,9 +223,6 @@ namespace CalculoRacksTrailerDesktop.V2.Views
                 MessageBox.Show($"Error al crear archivo de ejemplo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        #endregion Constructor e Inicialización
-
 
         private void txtCodigoRack_TextChanged(object sender, EventArgs e)
         {
@@ -353,8 +353,7 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             double ancho = rack.Ancho;
             double alto = rack.Alto;
 
-            if (!TrailerCalculator.UnitFitsSingle(largo, ancho, alto,
-                trailerLargo, trailerAncho, trailerAlto))
+            if (!TrailerCalculator.UnitFitsSingle(largo, ancho, alto, trailerLargo, trailerAncho, trailerAlto))
             {
                 rtbResultado.AppendText($"❌ ERROR → El rack {codigo} ({largo}×{ancho}×{alto}) no cabe en el tráiler.{Environment.NewLine}");
                 return;
