@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using CalculoRacksTrailerDesktop.V2.Models;
-using CalculoRacksTrailerDesktop.V2.Utils;
 
-namespace CalculoRacksTrailerDesktop.V2.Services
+namespace CalculoRacksTrailerDesktop.V2.Utils
 {
     public static class TrailerCalculator
     {

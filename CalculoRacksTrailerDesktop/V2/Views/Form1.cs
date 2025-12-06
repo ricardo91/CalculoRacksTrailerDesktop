@@ -13,6 +13,8 @@ namespace CalculoRacksTrailerDesktop.V2.Views
         #region Campos privados
 
         private double trailerLargo, trailerAncho, trailerAlto;
+        private readonly RackService rackService = new RackService();
+
         private Dictionary<string, Group> groups = new Dictionary<string, Group>();
         private PlacementStrategy currentStrategy = PlacementStrategy.GreedyByWidth;
 
@@ -315,6 +317,64 @@ namespace CalculoRacksTrailerDesktop.V2.Views
 
         private void btnAgregarRack_Click(object sender, EventArgs e)
         {
+            AddRackResult result = rackService.AddRack(new AddRackRequest
+            {
+                Codigo = txtCodigoRack.Text,
+                UnidadesStr = txtRackUnidades.Text,
+                TrailerLargo = trailerLargo,
+                TrailerAncho = trailerAncho,
+                TrailerAlto = trailerAlto,
+                Groups = groups,
+                RackCatalog = rackCatalog,
+                Strategy = currentStrategy
+            });
+
+            if (result.IsSuccess)
+            {
+                if (result.UpdatedGroups is not null)
+                {
+                    groups = result.UpdatedGroups;
+                }
+
+                if (!string.IsNullOrEmpty(result.Message))
+                {
+                    rtbResultado.AppendText(result.Message);
+                }
+
+                // Limpiar para el próximo
+                txtCodigoRack.Clear();
+                txtRackUnidades.Clear();
+                txtCodigoRack.Focus();
+            }
+            else
+            {
+                switch (result.ErrorType)
+                {
+                    case ErrorType.CodeEmpty:
+                        MessageBox.Show(result.Message, result.ShortMessage, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        txtCodigoRack.Focus();
+                        break;
+                    case ErrorType.CodeNotFound:
+                        MessageBox.Show(result.Message, result.ShortMessage, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        txtCodigoRack.Focus();
+                        txtCodigoRack.SelectAll();
+                        break;
+                    case ErrorType.InvalidUnits:
+                        MessageBox.Show(result.Message, result.ShortMessage, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        txtRackUnidades.Focus();
+                        txtRackUnidades.SelectAll();
+                        break;
+                    case ErrorType.DoesNotFit:
+                    case ErrorType.PlacementFailed:
+                        rtbResultado.AppendText(result.Message);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            #region Commented Old Code
+            /*
             string codigo = txtCodigoRack.Text.Trim().ToUpper();
 
             if (string.IsNullOrEmpty(codigo))
@@ -401,6 +461,8 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             txtCodigoRack.Clear();
             txtRackUnidades.Clear();
             txtCodigoRack.Focus();
+            */
+            #endregion Commented Old Code
         }
 
         private void btnMostrarResumen_Click(object sender, EventArgs e)
