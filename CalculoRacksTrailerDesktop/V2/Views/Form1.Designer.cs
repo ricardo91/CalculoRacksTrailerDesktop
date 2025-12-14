@@ -99,6 +99,7 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.AutoScroll = true;
             splitContainer1.Panel1.Controls.Add(lblTrailerLargo);
             splitContainer1.Panel1.Controls.Add(txtTrailerLargo);
             splitContainer1.Panel1.Controls.Add(lblTrailerAncho);
@@ -126,7 +127,6 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             splitContainer1.Panel1.Controls.Add(btnLimpiarRack);
             splitContainer1.Panel1.Controls.Add(btnLimpiarResultado);
             splitContainer1.Panel1.Controls.Add(btnNuevo);
-            splitContainer1.Panel1.AutoScroll = true;
             // 
             // splitContainer1.Panel2
             // 
@@ -191,12 +191,12 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             // 
             // lblStrategy
             // 
+            lblStrategy.Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold);
             lblStrategy.Location = new Point(20, 173);
             lblStrategy.Name = "lblStrategy";
             lblStrategy.Size = new Size(150, 23);
             lblStrategy.TabIndex = 7;
             lblStrategy.Text = "Estrategia de Colocación";
-            lblStrategy.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             // 
             // cmbStrategy
             // 
@@ -209,13 +209,13 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             // 
             // lblStrategyInfo
             // 
+            lblStrategyInfo.Font = new System.Drawing.Font("Segoe UI", 8F, FontStyle.Italic);
+            lblStrategyInfo.ForeColor = Color.DarkBlue;
             lblStrategyInfo.Location = new Point(20, 230);
             lblStrategyInfo.Name = "lblStrategyInfo";
             lblStrategyInfo.Size = new Size(310, 50);
             lblStrategyInfo.TabIndex = 9;
             lblStrategyInfo.Text = "Coloca primero las torres más anchas.\nÓptimo para aprovechar el ancho del tráiler.";
-            lblStrategyInfo.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Italic);
-            lblStrategyInfo.ForeColor = System.Drawing.Color.DarkBlue;
             // 
             // lblCodigoRack
             // 
@@ -235,63 +235,63 @@ namespace CalculoRacksTrailerDesktop.V2.Views
             // 
             // lblRackLargo
             // 
-            lblRackLargo.Location = new Point(20, 320);
+            lblRackLargo.Location = new Point(20, 350);
             lblRackLargo.Name = "lblRackLargo";
             lblRackLargo.Size = new Size(150, 23);
-            lblRackLargo.TabIndex = 12;
+            lblRackLargo.TabIndex = 14;
             lblRackLargo.Text = "Largo Rack (mm)";
             // 
             // txtRackLargo
             // 
-            txtRackLargo.Location = new Point(180, 320);
+            txtRackLargo.Location = new Point(180, 350);
             txtRackLargo.Name = "txtRackLargo";
             txtRackLargo.Size = new Size(150, 27);
-            txtRackLargo.TabIndex = 13;
+            txtRackLargo.TabIndex = 15;
             // 
             // lblRackAncho
             // 
-            lblRackAncho.Location = new Point(20, 350);
+            lblRackAncho.Location = new Point(20, 380);
             lblRackAncho.Name = "lblRackAncho";
             lblRackAncho.Size = new Size(136, 23);
-            lblRackAncho.TabIndex = 14;
+            lblRackAncho.TabIndex = 16;
             lblRackAncho.Text = "Ancho Rack (mm)";
             // 
             // txtRackAncho
             // 
-            txtRackAncho.Location = new Point(180, 350);
+            txtRackAncho.Location = new Point(180, 380);
             txtRackAncho.Name = "txtRackAncho";
             txtRackAncho.Size = new Size(150, 27);
-            txtRackAncho.TabIndex = 15;
+            txtRackAncho.TabIndex = 17;
             // 
             // lblRackAlto
             // 
-            lblRackAlto.Location = new Point(20, 380);
+            lblRackAlto.Location = new Point(20, 410);
             lblRackAlto.Name = "lblRackAlto";
             lblRackAlto.Size = new Size(136, 23);
-            lblRackAlto.TabIndex = 16;
+            lblRackAlto.TabIndex = 18;
             lblRackAlto.Text = "Alto Rack (mm)";
             // 
             // txtRackAlto
             // 
-            txtRackAlto.Location = new Point(180, 380);
+            txtRackAlto.Location = new Point(180, 410);
             txtRackAlto.Name = "txtRackAlto";
             txtRackAlto.Size = new Size(150, 27);
-            txtRackAlto.TabIndex = 17;
+            txtRackAlto.TabIndex = 19;
             // 
             // lblRackUnidades
             // 
-            lblRackUnidades.Location = new Point(20, 410);
+            lblRackUnidades.Location = new Point(20, 320);
             lblRackUnidades.Name = "lblRackUnidades";
             lblRackUnidades.Size = new Size(136, 23);
-            lblRackUnidades.TabIndex = 18;
+            lblRackUnidades.TabIndex = 12;
             lblRackUnidades.Text = "Unidades";
             // 
             // txtRackUnidades
             // 
-            txtRackUnidades.Location = new Point(180, 410);
+            txtRackUnidades.Location = new Point(180, 320);
             txtRackUnidades.Name = "txtRackUnidades";
             txtRackUnidades.Size = new Size(150, 27);
-            txtRackUnidades.TabIndex = 19;
+            txtRackUnidades.TabIndex = 13;
             // 
             // btnAgregarRack
             // 
