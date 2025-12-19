@@ -50,9 +50,5 @@ Aplicación de escritorio (Windows Forms) para calcular y ubicar racks dentro de
 - Hacer fork, crear una rama con la mejora y enviar pull request.
 - Mantener consistencia con el estilo del proyecto y añadir tests para cambios lógicos.
 
-## Imagen / Assets
-- Añadir capturas en `docs/screenshot.png` (ya referenciada arriba) para que se muestre en el README.
-- Alternativamente, reemplazar la URL por la de la imagen alojada en el repositorio o en GitHub Pages.
-
 ## Licencia
-- Añadir un archivo `LICENSE` con la licencia deseada (por ejemplo MIT).
+- Este proyecto se distribuye bajo la Licencia MIT. Consulta el archivo `LICENSE` en la raíz del repositorio para el texto legal completo.
