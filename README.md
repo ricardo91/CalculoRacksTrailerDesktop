@@ -2,7 +2,7 @@
 
 Aplicación de escritorio (Windows Forms) para calcular y ubicar racks dentro de un tráiler. Permite cargar un catálogo CSV de racks, agregar unidades y simular colocación usando distintas estrategias de empaquetado.
 
-![Vista previa](image.png)
+![Vista previa](Image.png)
 
 ## Características
 - Validación de códigos y unidades.
