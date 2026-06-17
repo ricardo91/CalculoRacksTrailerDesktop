@@ -11,7 +11,12 @@ namespace CalculoRacksTrailerDesktop.V2.Utils
         #region Métodos públicos
 
         public static bool UnitFitsSingle(double largo, double ancho, double alto, double trailerLargo, double trailerAncho, double trailerAlto)
-            => largo <= trailerLargo && ancho <= trailerAncho && alto <= trailerAlto;
+        {
+            if (alto > trailerAlto) return false;
+            // Acepta cualquiera de las dos orientaciones (normal o rotada 90°)
+            return (largo <= trailerLargo && ancho <= trailerAncho)
+                || (ancho <= trailerLargo && largo <= trailerAncho);
+        }
 
         public static Dictionary<string, Group> CloneGroups(Dictionary<string, Group> original)
         {
@@ -46,25 +51,71 @@ namespace CalculoRacksTrailerDesktop.V2.Utils
                 return true; // No hay nada que colocar
             }
 
-            // 2. Aplicar estrategia seleccionada
-            switch (strategy)
+            // 2. Probar todas las combinaciones de rotación por grupo (2^n grupos)
+            var groupKeys = groups.Keys.ToList();
+            int numGroups = groupKeys.Count;
+            int combinations = 1 << numGroups; // 2^n
+
+            for (int mask = 0; mask < combinations; mask++)
             {
-                case PlacementStrategy.GreedyByWidth:
-                    return TryPlaceWithOrdering(towers.OrderByDescending(t => t.Ancho).ThenByDescending(t => t.Largo).ToList(), trailerLargo, trailerAncho, out reason);
+                // Construir lista de torres con rotación independiente por grupo
+                var towersToUse = new List<Tower>();
+                var rotatedGroups = new Dictionary<string, bool>();
 
-                case PlacementStrategy.GreedyByLength:
-                    return TryPlaceWithOrdering(towers.OrderByDescending(t => t.Largo).ThenByDescending(t => t.Ancho).ToList(), trailerLargo, trailerAncho, out reason);
+                for (int i = 0; i < numGroups; i++)
+                {
+                    bool rotateThisGroup = (mask & (1 << i)) != 0;
+                    rotatedGroups[groupKeys[i]] = rotateThisGroup;
+                }
 
-                case PlacementStrategy.GreedyByArea:
-                    return TryPlaceWithOrdering(towers.OrderByDescending(t => t.Largo * t.Ancho).ToList(), trailerLargo, trailerAncho, out reason);
+                towersToUse = CreateTowersWithRotation(groups, trailerAlto, rotatedGroups);
 
-                case PlacementStrategy.BestFit:
-                    return TryBestFitStrategy(towers, trailerLargo, trailerAncho, out reason);
+                string tempReason;
+                bool ok;
 
-                default:
-                    reason = "Estrategia no reconocida.";
-                    return false;
+                switch (strategy)
+                {
+                    case PlacementStrategy.GreedyByWidth:
+                        ok = TryPlaceWithOrdering(towersToUse.OrderByDescending(t => t.Ancho).ThenByDescending(t => t.Largo).ToList(), trailerLargo, trailerAncho, out tempReason);
+                        break;
+
+                    case PlacementStrategy.GreedyByLength:
+                        ok = TryPlaceWithOrdering(towersToUse.OrderByDescending(t => t.Largo).ThenByDescending(t => t.Ancho).ToList(), trailerLargo, trailerAncho, out tempReason);
+                        break;
+
+                    case PlacementStrategy.GreedyByArea:
+                        ok = TryPlaceWithOrdering(towersToUse.OrderByDescending(t => t.Largo * t.Ancho).ToList(), trailerLargo, trailerAncho, out tempReason);
+                        break;
+
+                    case PlacementStrategy.BestFit:
+                        ok = TryBestFitStrategy(towersToUse, trailerLargo, trailerAncho, out tempReason);
+                        break;
+
+                    default:
+                        reason = "Estrategia no reconocida.";
+                        return false;
+                }
+
+                if (ok)
+                {
+                    // Describir qué grupos se rotaron para info al usuario
+                    var rotatedDesc = rotatedGroups
+                        .Where(kv => kv.Value)
+                        .Select(kv => kv.Key)
+                        .ToList();
+                    string rotInfo = rotatedDesc.Count > 0
+                        ? $" (grupos rotados 90°: {string.Join(", ", rotatedDesc)})"
+                        : string.Empty;
+                    reason = (tempReason + rotInfo).Trim();
+                    return true;
+                }
+
+                // Guardar el motivo de fallo de la primera combinación (sin rotaciones) como fallback
+                if (mask == 0)
+                    reason = tempReason;
             }
+
+            return false;
         }
 
         #endregion Métodos públicos
@@ -72,11 +123,22 @@ namespace CalculoRacksTrailerDesktop.V2.Utils
         #region Métodos privados
 
         private static List<Tower> CreateTowers(Dictionary<string, Group> groups, double trailerAlto)
+            => CreateTowersWithRotation(groups, trailerAlto, null);
+
+        private static List<Tower> CreateTowersWithRotation(
+            Dictionary<string, Group> groups,
+            double trailerAlto,
+            Dictionary<string, bool>? rotationMask)
         {
             var towers = new List<Tower>();
 
-            foreach (var g in groups.Values)
+            foreach (var kv in groups)
             {
+                var g = kv.Value;
+                bool rotate = rotationMask != null && rotationMask.TryGetValue(kv.Key, out bool r) && r;
+                double tLargo = rotate ? g.Ancho : g.Largo;
+                double tAncho = rotate ? g.Largo : g.Ancho;
+
                 var sortedHeights = g.UnitHeights.OrderByDescending(h => h).ToList();
                 double currentHeight = 0;
 
@@ -84,7 +146,7 @@ namespace CalculoRacksTrailerDesktop.V2.Utils
                 {
                     if (currentHeight + h > trailerAlto)
                     {
-                        towers.Add(new Tower(g.Largo, g.Ancho, currentHeight));
+                        towers.Add(new Tower(tLargo, tAncho, currentHeight));
                         currentHeight = h;
                     }
                     else
@@ -94,7 +156,7 @@ namespace CalculoRacksTrailerDesktop.V2.Utils
                 }
 
                 if (currentHeight > 0)
-                    towers.Add(new Tower(g.Largo, g.Ancho, currentHeight));
+                    towers.Add(new Tower(tLargo, tAncho, currentHeight));
             }
 
             return towers;
